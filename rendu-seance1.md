@@ -14,6 +14,9 @@ Elements à rendre:
    - /user
    - /movie
    - /review
+   - /login
+   - /signup
+   - /logout
  - plan d'action sur le découpage des fonctionnalités
  - lien d'accès au dépôt Github
 
