@@ -11,6 +11,9 @@ Elements à rendre:
    - un acceuil
    - une page pour mettre une review
  - endpoints API
+   - /user
+   - /movie
+   - /review
  - plan d'action sur le découpage des fonctionnalités
  - lien d'accès au dépôt Github
 
