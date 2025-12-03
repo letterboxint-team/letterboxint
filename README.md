@@ -43,11 +43,19 @@ Data Layer: Persistent storage for user data and movie metadata.
 
 ## Data flow
 
-- *schéma de recherche de film avec sauvegarde dans la base / review d'un film*
+![Request data flow](assets/data_flow.png "Request data flow")
 
 ## Database structure
 
-- *schéma de la base*
+![Database structure schema](assets/db_schema.png "Database structure schema")
+
+## API Endpoints
+
+- `GET /api/movie` to get infos about a movie
+- `POST /api/movie` to update infos of a movie in the DB
+- `GET /api/user` to get a user's main info
+- `GET /api/watchlist` to get a watchlist
+- `GET /api/review` to get a review
 
 # Meet the team
 
