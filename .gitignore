@@ -2,3 +2,4 @@
 *.py_c
 *database.db
 __pycache__/
+node_modules/
