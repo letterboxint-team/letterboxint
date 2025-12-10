@@ -28,6 +28,7 @@ class Movie(SQLModel, table=True):
     director: str
     release_year: int
     genre: str
+    poster_path: str
 
 
 class Friendship(SQLModel, table=True):
