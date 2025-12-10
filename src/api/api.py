@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import jwt
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from imdb_interface import add_movie, search_movie_by_title, MovieSearchResult
+from imdb.imdb_interface import add_movie, search_movie_by_title, MovieSearchResult
 
 origins = ["*"]
 app = FastAPI()
