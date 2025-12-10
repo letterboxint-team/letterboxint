@@ -1,5 +1,19 @@
+<<<<<<< HEAD
 .env
 *.py_c
 *database.db
 __pycache__/
 node_modules/
+=======
+# Node and build outputs
+node_modules/
+dist/
+
+# Environment files
+.env
+.env.*
+
+# Editor/OS junk
+.DS_Store
+*.log
+>>>>>>> 0b7003d (update)

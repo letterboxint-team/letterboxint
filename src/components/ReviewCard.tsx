@@ -1,67 +1,70 @@
-import { Star, Heart } from 'lucide-react';
 import { useState } from 'react';
-
-interface Review {
-  id: number;
-  user: string;
-  avatar: string;
-  rating: number;
-  text: string;
-  date: string;
-  liked: boolean;
-  likes: number;
-}
+import { Heart, Star } from 'lucide-react';
+import { UiReview } from '../api/backend';
 
 interface ReviewCardProps {
-  review: Review;
+  review: UiReview;
 }
 
 export function ReviewCard({ review }: ReviewCardProps) {
-  const [likes, setLikes] = useState(review.likes);
-  const [isLiked, setIsLiked] = useState(false);
+  const [likes, setLikes] = useState(review.favorite ? 1 : 0);
+  const [isLiked, setIsLiked] = useState(review.favorite);
+  const initials = review.username.slice(0, 2).toUpperCase();
 
   const handleLike = () => {
-    if (isLiked) {
-      setLikes(likes - 1);
-    } else {
-      setLikes(likes + 1);
-    }
-    setIsLiked(!isLiked);
+    setLikes((prev) => (isLiked ? prev - 1 : prev + 1));
+    setIsLiked((prev) => !prev);
   };
 
   return (
     <div className="bg-[#1a1f29] rounded-lg p-6">
       <div className="flex items-start gap-4">
-        <img
-          src={review.avatar}
-          alt={review.user}
-          className="w-12 h-12 rounded-full"
-        />
-        
+        {review.avatar ? (
+          <img
+            src={review.avatar}
+            alt={review.username}
+            className="w-12 h-12 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-full bg-[#00c030] text-white flex items-center justify-center">
+            {initials}
+          </div>
+        )}
+
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-white">{review.user}</h3>
+              <h3 className="text-white">{review.username}</h3>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       size={14}
-                      className={i < review.rating ? 'fill-[#00c030] text-[#00c030]' : 'text-gray-600'}
+                      className={
+                        i < Math.round(review.averageRating)
+                          ? 'fill-[#00c030] text-[#00c030]'
+                          : 'text-gray-600'
+                      }
                     />
                   ))}
                 </div>
                 <span className="text-gray-400 text-sm">{review.date}</span>
               </div>
+              <p className="text-gray-400 text-sm">
+                Visuel {review.breakdown.visual}/5 · Action {review.breakdown.action}/5 · Scénario{' '}
+                {review.breakdown.scenario}/5
+              </p>
+              <p className="text-gray-500 text-xs mt-1">Note moyenne {review.averageRating}/5</p>
+              {review.movieTitle && (
+                <p className="text-gray-500 text-xs">Film : {review.movieTitle}</p>
+              )}
             </div>
 
-            {review.liked && (
+            {review.favorite && (
               <Heart size={16} className="text-[#ff6b6b] fill-[#ff6b6b]" />
             )}
           </div>
-
-          <p className="text-gray-300 leading-relaxed mb-4">{review.text}</p>
 
           <button
             onClick={handleLike}

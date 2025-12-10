@@ -1,81 +1,59 @@
 import { Star, Heart, Eye, List, Clock } from 'lucide-react';
-import { movies } from '../data/movies';
+import { Movie } from '../data/movies';
+import { UiReview } from '../api/backend';
 
 interface ActivityProps {
+  movies: Movie[];
+  reviews: UiReview[];
   onMovieClick: (movieId: number) => void;
 }
 
-export function Activity({ onMovieClick }: ActivityProps) {
-  const activities = [
-    {
-      id: 1,
-      type: 'review' as const,
-      user: {
-        name: 'Marie Dubois',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-      },
-      movie: movies[2],
-      rating: 5,
-      review: 'Un film parfait qui mélange les genres avec brio. Critique sociale percutante.',
-      time: 'Il y a 2 heures',
-      liked: true,
-    },
-    {
-      id: 2,
-      type: 'watched' as const,
-      user: {
-        name: 'Thomas Laurent',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
-      },
-      movie: movies[1],
-      time: 'Il y a 3 heures',
-    },
-    {
-      id: 3,
-      type: 'rating' as const,
-      user: {
-        name: 'Sophie Martin',
-        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
-      },
-      movie: movies[0],
-      rating: 4.5,
-      time: 'Il y a 5 heures',
-    },
-    {
-      id: 4,
-      type: 'list' as const,
-      user: {
-        name: 'Alexandre Petit',
-        avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop',
-      },
-      listName: 'Mes films d\'horreur préférés',
-      movieCount: 15,
-      time: 'Il y a 6 heures',
-    },
-    {
-      id: 5,
-      type: 'review' as const,
-      user: {
-        name: 'Julie Bernard',
-        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop',
-      },
-      movie: movies[4],
-      rating: 4,
-      review: 'Une expérience cinématographique intense. Le film d\'action ultime.',
-      time: 'Il y a 8 heures',
-      liked: false,
-    },
-    {
-      id: 6,
-      type: 'watched' as const,
-      user: {
-        name: 'Pierre Rousseau',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
-      },
-      movie: movies[6],
-      time: 'Il y a 10 heures',
-    },
-  ];
+type ActivityItem = {
+  id: number;
+  type: 'review' | 'watched' | 'rating' | 'list';
+  user: {
+    name: string;
+    avatar: string;
+  };
+  movie?: Movie;
+  rating?: number;
+  time: string;
+  liked?: boolean;
+  breakdown?: UiReview['breakdown'];
+  listName?: string;
+  movieCount?: number;
+};
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return dateString;
+  return date.toLocaleDateString();
+}
+
+export function Activity({ movies, reviews, onMovieClick }: ActivityProps) {
+  const moviesById = new Map(movies.map((movie) => [movie.id, movie]));
+
+  const reviewActivities: ActivityItem[] = reviews
+    .map((review) => {
+      const movie = moviesById.get(review.movieId);
+      if (!movie) return null;
+      const avatar =
+        review.avatar ||
+        `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(review.username)}`;
+      return {
+        id: review.id,
+        type: 'review' as const,
+        user: { name: review.username, avatar },
+        movie,
+        rating: review.averageRating,
+        breakdown: review.breakdown,
+        time: formatDate(review.date),
+        liked: review.favorite,
+      };
+    })
+    .filter(Boolean) as ActivityItem[];
+
+  const activities = reviewActivities;
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -92,7 +70,7 @@ export function Activity({ onMovieClick }: ActivityProps) {
     }
   };
 
-  const getActivityText = (activity: any) => {
+  const getActivityText = (activity: ActivityItem) => {
     switch (activity.type) {
       case 'review':
         return 'a écrit une critique de';
@@ -112,7 +90,7 @@ export function Activity({ onMovieClick }: ActivityProps) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-white text-3xl mb-2">Activité</h1>
-        <p className="text-gray-400">Découvrez ce que font vos amis et la communauté</p>
+        <p className="text-gray-400">Flux généré automatiquement depuis le backend FastAPI</p>
       </div>
 
       {/* Filter Tabs */}
@@ -152,14 +130,14 @@ export function Activity({ onMovieClick }: ActivityProps) {
                         <>
                           {' '}
                           <button
-                            onClick={() => onMovieClick(activity.movie.id)}
+                            onClick={() => onMovieClick(activity.movie!.id)}
                             className="text-[#00c030] hover:opacity-80 transition-opacity"
                           >
                             {activity.movie.title}
                           </button>
                         </>
                       )}
-                      {activity.type === 'list' && (
+                      {activity.type === 'list' && activity.listName && (
                         <>
                           {' '}
                           <span className="text-[#00c030]">{activity.listName}</span>
@@ -180,13 +158,13 @@ export function Activity({ onMovieClick }: ActivityProps) {
                       src={activity.movie.poster}
                       alt={activity.movie.title}
                       className="w-20 h-30 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => onMovieClick(activity.movie.id)}
+                      onClick={() => onMovieClick(activity.movie!.id)}
                     />
-                    
+
                     <div className="flex-1">
                       <h3
                         className="text-white hover:text-[#00c030] cursor-pointer transition-colors mb-1"
-                        onClick={() => onMovieClick(activity.movie.id)}
+                        onClick={() => onMovieClick(activity.movie!.id)}
                       >
                         {activity.movie.title}
                       </h3>
@@ -195,46 +173,33 @@ export function Activity({ onMovieClick }: ActivityProps) {
                       </p>
 
                       {activity.rating && (
-                        <div className="flex items-center gap-1 mb-2">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              size={16}
-                              className={
-                                i < Math.floor(activity.rating)
-                                  ? 'fill-[#00c030] text-[#00c030]'
-                                  : 'text-gray-600'
-                              }
-                            />
-                          ))}
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-gray-300 text-sm">Note moyenne</span>
+                          <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={16}
+                                className={
+                                  i < Math.round(activity.rating!)
+                                    ? 'fill-[#00c030] text-[#00c030]'
+                                    : 'text-gray-600'
+                                }
+                              />
+                            ))}
+                            <span className="text-gray-400 text-xs ml-2">
+                              {activity.rating.toFixed(1)}
+                            </span>
+                          </div>
                         </div>
                       )}
 
-                      {activity.review && (
-                        <p className="text-gray-300 text-sm leading-relaxed">
-                          {activity.review}
+                      {activity.breakdown && (
+                        <p className="text-gray-400 text-sm">
+                          Visuel {activity.breakdown.visual}/5 · Action {activity.breakdown.action}/5
+                          · Scénario {activity.breakdown.scenario}/5
                         </p>
                       )}
-                    </div>
-
-                    {activity.liked !== undefined && (
-                      <div className="flex-shrink-0">
-                        <Heart
-                          size={20}
-                          className={activity.liked ? 'text-[#ff6b6b] fill-[#ff6b6b]' : 'text-gray-600'}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* List Details */}
-                {activity.type === 'list' && (
-                  <div className="bg-[#14181c] rounded-lg p-4">
-                    <div className="flex items-center gap-2">
-                      <List size={18} className="text-[#00c030]" />
-                      <span className="text-white">{activity.listName}</span>
-                      <span className="text-gray-400 text-sm">· {activity.movieCount} films</span>
                     </div>
                   </div>
                 )}
@@ -242,13 +207,12 @@ export function Activity({ onMovieClick }: ActivityProps) {
             </div>
           </div>
         ))}
-      </div>
 
-      {/* Load More */}
-      <div className="text-center mt-8">
-        <button className="px-6 py-3 bg-[#1a1f29] text-white rounded-md hover:bg-[#2c3440] transition-colors">
-          Charger plus d'activités
-        </button>
+        {activities.length === 0 && (
+          <div className="text-center text-gray-400 py-12">
+            Aucune activité disponible. Ajoutez des critiques via le backend pour remplir ce flux.
+          </div>
+        )}
       </div>
     </div>
   );

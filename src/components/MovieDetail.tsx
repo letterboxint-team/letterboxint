@@ -1,53 +1,69 @@
-import { Star, Eye, Heart, Clock, Calendar, Plus, Check } from 'lucide-react';
-import { useState } from 'react';
-import { movies, Movie } from '../data/movies';
+import { useEffect, useState } from 'react';
+import { Star, Eye, Heart, Clock, Plus, Check } from 'lucide-react';
+import { Movie } from '../data/movies';
+import { UiReview } from '../api/backend';
 import { MovieCard } from './MovieCard';
 import { ReviewCard } from './ReviewCard';
 
 interface MovieDetailProps {
   movieId: number;
+  movies: Movie[];
+  reviews: UiReview[];
+  canReview: boolean;
+  onCreateReview: (payload: {
+    movie_id: number;
+    note_visual: number;
+    note_action: number;
+    note_scenario: number;
+    favorite?: boolean;
+  }) => void;
   onMovieClick: (movieId: number) => void;
 }
 
-export function MovieDetail({ movieId, onMovieClick }: MovieDetailProps) {
-  const movie = movies.find(m => m.id === movieId);
+export function MovieDetail({
+  movieId,
+  movies,
+  reviews,
+  canReview,
+  onCreateReview,
+  onMovieClick,
+}: MovieDetailProps) {
+  const movie = movies.find((item) => item.id === movieId);
+  const movieReviews = reviews.filter((review) => review.movieId === movieId);
+
   const [userRating, setUserRating] = useState(movie?.userRating || 0);
-  const [isWatched, setIsWatched] = useState(movie?.watched || false);
-  const [isLiked, setIsLiked] = useState(movie?.userReview?.liked || false);
+  const [isWatched, setIsWatched] = useState(movie?.watched || movieReviews.length > 0);
+  const [isLiked, setIsLiked] = useState(movieReviews.some((review) => review.favorite));
   const [hoveredStar, setHoveredStar] = useState(0);
+  const [form, setForm] = useState({
+    note_visual: 3,
+    note_action: 3,
+    note_scenario: 3,
+    favorite: false,
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setUserRating(movie?.userRating || 0);
+    setIsWatched(movie?.watched || movieReviews.length > 0);
+    setIsLiked(movieReviews.some((review) => review.favorite));
+  }, [movieId, movie, movieReviews]);
 
   if (!movie) {
-    return <div className="text-white text-center py-20">Film non trouvé</div>;
+    return (
+      <div className="text-white text-center py-20">
+        Film non trouvé dans les données du backend.
+      </div>
+    );
   }
 
-  // Similar movies
   const similarMovies = movies
-    .filter(m => m.id !== movieId && m.genre.some(g => movie.genre.includes(g)))
+    .filter((m) => m.id !== movieId && m.genre.some((g) => movie.genre.includes(g)))
     .slice(0, 6);
 
-  // Mock reviews from other users
-  const otherReviews = [
-    {
-      id: 1,
-      user: "Marie D.",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-      rating: 5,
-      text: "Un film magnifique qui reste gravé dans la mémoire. La réalisation est impeccable et l'histoire profondément touchante.",
-      date: "2024-11-25",
-      liked: true,
-      likes: 42
-    },
-    {
-      id: 2,
-      user: "Thomas L.",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-      rating: 4,
-      text: "Excellent film, même si certaines longueurs se font sentir. La photographie est à couper le souffle.",
-      date: "2024-11-20",
-      liked: false,
-      likes: 28
-    },
-  ];
+  const averageNote = Number(movie.rating || 0).toFixed(1);
+  const runtimeText = movie.runtime ? `${movie.runtime} min` : 'Durée inconnue';
+  const genres = movie.genre.length > 0 ? movie.genre : ['Genre non renseigné'];
 
   return (
     <div className="pb-12">
@@ -77,20 +93,20 @@ export function MovieDetail({ movieId, onMovieClick }: MovieDetailProps) {
             <div className="flex-1">
               <h1 className="text-white text-5xl mb-2">{movie.title}</h1>
               <div className="flex items-center gap-4 mb-4 text-gray-400">
-                <span>{movie.year}</span>
+                <span>{movie.year || 'Année inconnue'}</span>
                 <span>•</span>
                 <span>Réalisé par {movie.director}</span>
                 <span>•</span>
                 <div className="flex items-center gap-1">
                   <Clock size={16} />
-                  <span>{movie.runtime} min</span>
+                  <span>{runtimeText}</span>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-2 mb-6">
-                {movie.genre.map((g) => (
-                  <span key={g} className="bg-[#1a1f29] text-gray-300 px-3 py-1 rounded-full text-sm">
-                    {g}
+                {genres.map((genre) => (
+                  <span key={genre} className="bg-[#1a1f29] text-gray-300 px-3 py-1 rounded-full text-sm">
+                    {genre}
                   </span>
                 ))}
               </div>
@@ -98,10 +114,10 @@ export function MovieDetail({ movieId, onMovieClick }: MovieDetailProps) {
               {/* Rating */}
               <div className="flex items-center gap-6 mb-6">
                 <div>
-                  <div className="text-gray-400 text-sm mb-1">Note moyenne</div>
+                  <div className="text-gray-400 text-sm mb-1">Note moyenne (backend)</div>
                   <div className="flex items-center gap-2">
                     <Star className="text-[#00c030] fill-[#00c030]" size={24} />
-                    <span className="text-white text-2xl">{movie.rating.toFixed(1)}</span>
+                    <span className="text-white text-2xl">{averageNote}</span>
                     <span className="text-gray-400">/5</span>
                   </div>
                 </div>
@@ -170,58 +186,116 @@ export function MovieDetail({ movieId, onMovieClick }: MovieDetailProps) {
         {/* Synopsis */}
         <section className="mb-12">
           <h2 className="text-white text-2xl mb-4">Synopsis</h2>
-          <p className="text-gray-300 leading-relaxed max-w-3xl">{movie.synopsis}</p>
+          <p className="text-gray-300 leading-relaxed max-w-3xl">
+            {movie.synopsis || 'Synopsis non disponible pour ce film.'}
+          </p>
         </section>
 
         {/* Cast */}
         <section className="mb-12">
           <h2 className="text-white text-2xl mb-4">Distribution</h2>
-          <div className="flex flex-wrap gap-3">
-            {movie.cast.map((actor) => (
-              <span key={actor} className="bg-[#1a1f29] text-gray-300 px-4 py-2 rounded-md">
-                {actor}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* User Review */}
-        {movie.userReview && (
-          <section className="mb-12">
-            <h2 className="text-white text-2xl mb-4">Votre critique</h2>
-            <div className="bg-[#1a1f29] rounded-lg p-6">
-              <div className="flex items-center gap-2 mb-3">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={20}
-                    className={i < movie.userReview!.rating ? 'fill-[#00c030] text-[#00c030]' : 'text-gray-600'}
-                  />
-                ))}
-                <span className="text-gray-400 text-sm ml-2">{movie.userReview.date}</span>
-              </div>
-              <p className="text-gray-300 leading-relaxed">{movie.userReview.text}</p>
+          {movie.cast.length > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              {movie.cast.map((actor) => (
+                <span key={actor} className="bg-[#1a1f29] text-gray-300 px-4 py-2 rounded-md">
+                  {actor}
+                </span>
+              ))}
             </div>
-          </section>
-        )}
-
-        {/* Other Reviews */}
-        <section className="mb-12">
-          <h2 className="text-white text-2xl mb-4">Critiques populaires</h2>
-          <div className="space-y-4">
-            {otherReviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
-          </div>
+          ) : (
+            <p className="text-gray-400">Aucune distribution renseignée.</p>
+          )}
         </section>
 
-        {/* Similar Movies */}
+        {/* Reviews */}
+        <section className="mb-12">
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-white text-2xl">Critiques du backend</h2>
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <Star size={16} className="text-[#00c030]" />
+              <span>{movieReviews.length} critique(s)</span>
+            </div>
+          </div>
+          {canReview ? (
+            <div className="bg-[#1a1f29] rounded-lg p-4 mb-4">
+              <h3 className="text-white mb-3">Publier une critique</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {(['note_visual', 'note_action', 'note_scenario'] as const).map((field) => (
+                  <label key={field} className="text-gray-300 text-sm flex flex-col gap-1">
+                    {field.replace('note_', 'Note ')} (0-5)
+                    <input
+                      type="number"
+                      min={0}
+                      max={5}
+                      value={form[field]}
+                      onChange={(e) =>
+                        setForm((prev) => ({ ...prev, [field]: Number(e.target.value) }))
+                      }
+                      className="bg-[#14181c] text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00c030]"
+                    />
+                  </label>
+                ))}
+              </div>
+              <div className="flex items-center gap-3 mt-3">
+                <label className="flex items-center gap-2 text-gray-300 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.favorite}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, favorite: e.target.checked }))
+                    }
+                    className="accent-[#00c030]"
+                  />
+                  Coup de coeur
+                </label>
+                <button
+                  disabled={submitting}
+                  onClick={async () => {
+                    setSubmitting(true);
+                    await onCreateReview({
+                      movie_id: movieId,
+                      note_visual: form.note_visual,
+                      note_action: form.note_action,
+                      note_scenario: form.note_scenario,
+                      favorite: form.favorite,
+                    });
+                    setSubmitting(false);
+                  }}
+                  className="px-4 py-2 bg-[#00c030] text-white rounded-md hover:bg-[#00d436] transition-colors disabled:opacity-50"
+                >
+                  {submitting ? 'Envoi...' : 'Publier'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-400 mb-4">
+              Connectez-vous pour publier une critique.
+            </p>
+          )}
+          {movieReviews.length > 0 ? (
+            <div className="space-y-4">
+              {movieReviews.map((review) => (
+                <ReviewCard key={review.id} review={review} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-400">
+              Aucune critique n'a encore été publiée pour ce film via l'API FastAPI.
+            </p>
+          )}
+        </section>
+
+        {/* Similar movies */}
         {similarMovies.length > 0 && (
-          <section>
+          <section className="mb-12">
             <h2 className="text-white text-2xl mb-4">Films similaires</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {similarMovies.map((m) => (
-                <MovieCard key={m.id} movie={m} onClick={() => onMovieClick(m.id)} />
+              {similarMovies.map((similar) => (
+                <MovieCard
+                  key={similar.id}
+                  movie={similar}
+                  onClick={() => onMovieClick(similar.id)}
+                />
               ))}
             </div>
           </section>
