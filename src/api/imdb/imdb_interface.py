@@ -7,7 +7,14 @@ from models import Movie
 import tmdbsimple as tmdb
 
 
-tmdb.API_KEY = os.environ.get("TMDB_API_KEY")
+try:
+    API_KEY = os.environ["TMDB_API_KEY"]
+except KeyError:
+    raise SystemExit("Missing TMDB_API_KEY environ variable")
+
+tmdb.API_KEY = API_KEY
+
+
 engine = create_engine("sqlite:///database.db")
 
 
@@ -38,7 +45,7 @@ def search_movie_by_title(title: str) -> list[MovieSearchResult]:
     search = tmdb.Search()
     data = search.movie(query=title)
     list_films = []
-    for result in data.results:
+    for result in data["results"]:
         list_films.append(
             MovieSearchResult(
                 title=result["title"],
@@ -52,6 +59,6 @@ def search_movie_by_title(title: str) -> list[MovieSearchResult]:
 
 class MovieSearchResult(BaseModel):
     title: str
-    poster_path: str
+    poster_path: str | None
     release_date: str
     id: int
