@@ -80,6 +80,22 @@ async function fetchJson<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function postJson<T>(path: string, data: unknown): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erreur API ${response.status}: ${response.statusText}`);
+  }
+  return response.json() as Promise<T>;
+}
+
+
 export async function fetchMovies(): Promise<ApiMovie[]> {
   return fetchJson<ApiMovie[]>('/movies');
 }
