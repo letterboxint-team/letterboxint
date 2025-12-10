@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 .env
 *.py_c
 *database.db
@@ -17,3 +18,6 @@ dist/
 .DS_Store
 *.log
 >>>>>>> 0b7003d (update)
+=======
+.env
+>>>>>>> d561f7c (feat: add imdb connexion)
