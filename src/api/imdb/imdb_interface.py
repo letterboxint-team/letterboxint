@@ -7,7 +7,14 @@ from models import Movie
 import tmdbsimple as tmdb
 
 
-tmdb.API_KEY = os.environ.get("TMDB_API_KEY")
+try:
+    API_KEY = os.environ["TMDB_API_KEY"]
+except KeyError:
+    raise SystemExit("Missing TMDB_API_KEY environ variable")
+
+tmdb.API_KEY = API_KEY
+
+
 engine = create_engine("sqlite:///database.db")
 
 

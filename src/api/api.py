@@ -1,3 +1,9 @@
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
+
 from fastapi import FastAPI
 from sqlmodel import SQLModel, create_engine, Session
 from models import User
@@ -5,7 +11,6 @@ from fastapi import HTTPException, status, Body
 from sqlmodel import select
 from models import Movie, Review
 import os
-from dotenv import load_dotenv
 import jwt
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +27,6 @@ app.add_middleware(
 )
 engine = create_engine("sqlite:///database.db")
 SQLModel.metadata.create_all(engine)
-load_dotenv()
 secret_key = os.getenv("SECRET_KEY", "EDIT_THE_DOT_ENV_IN_PRODUCTION_OR_GET_FIRED")
 
 
