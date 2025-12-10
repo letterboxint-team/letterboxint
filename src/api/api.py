@@ -1,4 +1,3 @@
-from ssl import OP_NO_RENEGOTIATION
 from fastapi import FastAPI
 from sqlmodel import SQLModel, create_engine, Session
 from models import User
@@ -7,14 +6,12 @@ from sqlmodel import select
 from models import Movie, Review
 import os
 from dotenv import load_dotenv
-from jwt import encode
+from PyJWT import encode
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from imdb_interface import add_movie, search_movie_by_title, MovieSearchResult
 
-origins = [
-    "*"
-]
+origins = ["*"]
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -27,6 +24,7 @@ engine = create_engine("sqlite:///database.db")
 SQLModel.metadata.create_all(engine)
 load_dotenv()
 secret_key = os.getenv("SECRET_KEY", "EDIT_THE_DOT_ENV_IN_PRODUCTION_OR_GET_FIRED")
+
 
 @app.get("/")
 def read_root():
@@ -83,6 +81,7 @@ def login(credentials: dict = Body(...)):
         token = encode({"user_id": user.id}, secret_key, algorithm="HS256")
         return {"access_token": token, "token_type": "bearer"}
 
+
 @app.post("/logout")
 def logout():
     response = JSONResponse(content={"message": "Logged out"})
@@ -96,10 +95,12 @@ def list_movies():
         movies = session.exec(select(Movie)).all()
         return movies
 
+
 @app.get("/movies/search/")
 def search_movies(title: str) -> list[MovieSearchResult]:
     results = search_movie_by_title(title)
     return results
+
 
 @app.get("/movies/{movie_id}")
 def read_movie(movie_id: int):
@@ -140,7 +141,8 @@ def list_reviews():
     with Session(engine) as session:
         reviews = session.exec(select(Review)).all()
         return reviews
-    
+
+
 @app.get("/reviews/{movie_id}")
 def reviews_by_movie(movie_id: int):
     with Session(engine) as session:
