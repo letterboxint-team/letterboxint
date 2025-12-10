@@ -4,11 +4,16 @@ from models import User
 from fastapi import HTTPException, status, Body
 from sqlmodel import select
 from models import Movie, Review
+import os
+from dotenv import load_dotenv
+import jwt
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 engine = create_engine("sqlite:///database.db")
 SQLModel.metadata.create_all(engine)
-
+load_dotenv()
+secret_key = os.getenv("SECRET_KEY", "EDIT_THE_DOT_ENV_IN_PRODUCTION_OR_GET_FIRED")
 
 @app.get("/")
 def read_root():
@@ -62,14 +67,14 @@ def login(credentials: dict = Body(...)):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",
             )
-        # In a real app return a token; here we return basic info for simplicity
-        return {"message": "login successful", "user_id": user.id}
-
+        token = jwt.encode({"user_id": user.id}, secret_key, algorithm="HS256")
+        return {"access_token": token, "token_type": "bearer"}
 
 @app.post("/logout")
 def logout():
-    # Stateless placeholder: client should drop token/cookie. Keep endpoint for symmetry.
-    return {"message": "logout successful"}
+    response = JSONResponse(content={"message": "Logged out"})
+    response.delete_cookie(key="access_token")
+    return response
 
 
 @app.get("/movies")
