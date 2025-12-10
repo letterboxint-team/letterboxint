@@ -9,4 +9,5 @@ dependencies = [
     "fastapi[standard]>=0.122.0",
     "pyjwt>=2.10.1",
     "sqlmodel>=0.0.27",
+    "tmdbsimple>=2.9.1",
 ]

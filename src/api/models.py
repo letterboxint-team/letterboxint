@@ -26,7 +26,7 @@ class Movie(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str
     director: str
-    release_year: int
+    release_year: int | None
     genre: str
     poster_path: str
 
