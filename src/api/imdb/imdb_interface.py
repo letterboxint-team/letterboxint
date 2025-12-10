@@ -44,8 +44,9 @@ def add_movie(movie_id: int):
 def search_movie_by_title(title: str) -> list[MovieSearchResult]:
     search = tmdb.Search()
     data = search.movie(query=title)
+    print(data)
     list_films = []
-    for result in data.results:
+    for result in data["results"]:
         list_films.append(
             MovieSearchResult(
                 title=result["title"],
@@ -59,6 +60,6 @@ def search_movie_by_title(title: str) -> list[MovieSearchResult]:
 
 class MovieSearchResult(BaseModel):
     title: str
-    poster_path: str
+    poster_path: str | None
     release_date: str
     id: int
