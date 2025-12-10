@@ -7,7 +7,7 @@ from sqlmodel import select
 from models import Movie, Review
 import os
 from dotenv import load_dotenv
-import jwt
+from jwt import encode
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from imdb_interface import add_movie, search_movie_by_title, MovieSearchResult
@@ -80,7 +80,7 @@ def login(credentials: dict = Body(...)):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",
             )
-        token = jwt.encode({"user_id": user.id}, secret_key, algorithm="HS256")
+        token = encode({"user_id": user.id}, secret_key, algorithm="HS256")
         return {"access_token": token, "token_type": "bearer"}
 
 @app.post("/logout")
