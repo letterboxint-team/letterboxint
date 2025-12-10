@@ -21,4 +21,5 @@ ENV UV_NO_DEV=1
 WORKDIR /app
 RUN uv sync --locked
 # Presuming there is a `my_app` command provided by the project
-CMD ["uv", "run", "my_app"]
+RUN uv run dummy.py
+CMD ["uv", "run", "fastapi","dev","api.py","--host","0.0.0.0","--port","8000"]

@@ -1,3 +1,4 @@
+from ssl import OP_NO_RENEGOTIATION
 from fastapi import FastAPI
 from sqlmodel import SQLModel, create_engine, Session
 from models import User
@@ -8,8 +9,19 @@ import os
 from dotenv import load_dotenv
 import jwt
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
+origins = [
+    "*"
+]
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 engine = create_engine("sqlite:///database.db")
 SQLModel.metadata.create_all(engine)
 load_dotenv()
