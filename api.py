@@ -49,15 +49,15 @@ def signup(user: User):
 @app.post("/login")
 def login(credentials: dict = Body(...)):
     username = credentials.get("username")
-    password = credentials.get("password")
-    if not username or not password:
+    password_hash = credentials.get("password_hash")
+    if not username or not password_hash:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="username and password required",
         )
     with Session(engine) as session:
         user = session.exec(select(User).where(User.username == username)).first()
-        if not user or getattr(user, "password", None) != password:
+        if not user or user.password_hash != password_hash:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",
@@ -76,17 +76,8 @@ def logout():
 def list_movies():
     with Session(engine) as session:
         movies = session.exec(select(Movie)).all()
+        #TODO: @LliKsss link tdmb
         return movies
-
-
-@app.post("/movies", status_code=status.HTTP_201_CREATED)
-def create_movie(movie: Movie):
-    with Session(engine) as session:
-        session.add(movie)
-        session.commit()
-        session.refresh(movie)
-        return movie
-
 
 @app.get("/movies/{movie_id}")
 def read_movie(movie_id: int):
@@ -103,14 +94,14 @@ def read_movie(movie_id: int):
 def create_review(review: Review):
     with Session(engine) as session:
         # Optionally validate referenced user/movie exist
-        if getattr(review, "user_id", None) is not None:
+        if review.user_id is not None:
             user = session.get(User, review.user_id)
             if not user:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Invalid user_id",
                 )
-        if getattr(review, "movie_id", None) is not None:
+        if review.movie_id is not None:
             movie = session.get(Movie, review.movie_id)
             if not movie:
                 raise HTTPException(
@@ -127,6 +118,17 @@ def create_review(review: Review):
 def list_reviews():
     with Session(engine) as session:
         reviews = session.exec(select(Review)).all()
+        return reviews
+    
+@app.get("/reviews/{movie_id}")
+def reviews_by_movie(movie_id: int):
+    with Session(engine) as session:
+        movie = session.get(Movie, movie_id)
+        if not movie:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+            )
+        reviews = session.exec(select(Review).where(Review.movie_id == movie_id)).all()
         return reviews
 
 
