@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import jwt
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from imdb_interface import add_movie, search_movie_by_title, MovieSearchResult
 
 origins = [
     "*"
@@ -93,17 +94,20 @@ def logout():
 def list_movies():
     with Session(engine) as session:
         movies = session.exec(select(Movie)).all()
-        #TODO: @LliKsss link tdmb
         return movies
+
+@app.get("/movies/search/")
+def search_movies(title: str) -> list[MovieSearchResult]:
+    results = search_movie_by_title(title)
+    return results
 
 @app.get("/movies/{movie_id}")
 def read_movie(movie_id: int):
     with Session(engine) as session:
         movie = session.get(Movie, movie_id)
         if not movie:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
-            )
+            add_movie(movie_id)
+            movie = session.get(Movie, movie_id)
         return movie
 
 
