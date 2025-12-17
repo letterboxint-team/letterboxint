@@ -5,6 +5,7 @@ FROM python:3.14-alpine AS python
 FROM python AS build
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
+ENV UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/var/cache/apk \
     --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
