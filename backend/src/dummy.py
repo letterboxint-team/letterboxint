@@ -65,8 +65,8 @@ dummy_friendships = [
 
 def add_dummy_data(engine):
     with Session(engine) as session:
-        for movie in dummy_movies:
-            session.add(movie)
+        # for movie in dummy_movies:
+        #     session.add(movie)
         for user in dummy_users:
             session.add(user)
         for review in dummy_reviews:
