@@ -80,6 +80,24 @@ export default function App() {
     setCurrentPage(page);
   };
 
+  const handleSearchSelect = async (movieId: number) => {
+    try {
+      const API_BASE_URL = ((import.meta as any).env?.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+      // Ensure the movie exists in backend DB (read_movie will add if missing)
+      await fetch(`${API_BASE_URL}/movies/${movieId}`);
+      // Refresh movies so MovieDetail can find it
+      const apiMovies = await fetchMovies();
+      const apiReviews = await fetchReviews();
+      const reviewStats = getReviewStatsByMovie(apiReviews);
+      const uiMovies = mapApiMoviesToUiMovies(apiMovies, reviewStats);
+      setMovies(uiMovies);
+      navigateToMovie(movieId);
+    } catch (err) {
+      console.error('Search select error', err);
+      setError("Impossible d'afficher le film recherché.");
+    }
+  };
+
   const handleAuth = async (mode: 'login' | 'signup', username: string, password: string) => {
     try {
       setError(null);
@@ -139,7 +157,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#14181c]">
-      <Header currentPage={currentPage} onNavigate={navigateToPage} />
+      <Header currentPage={currentPage} onNavigate={navigateToPage} onSelectMovie={handleSearchSelect} />
       <AuthBar
         activeUser={activeUser}
         onLogin={(u, p) => handleAuth('login', u, p)}
