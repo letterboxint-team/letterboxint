@@ -1,25 +1,29 @@
-FROM python:3.12-slim-trixie
+# syntax=docker/dockerfile-upstream:master-labs
 
-# The installer requires curl (and certificates) to download the release archive
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+FROM python:3.14-alpine AS python
 
-# Download the latest installer
-ADD https://astral.sh/uv/install.sh /uv-installer.sh
-
-# Run the installer then remove it
-RUN sh /uv-installer.sh && rm /uv-installer.sh
-
-# Ensure the installed binary is on the `PATH`
-ENV PATH="/root/.local/bin/:$PATH"
-# Copy the project into the image
-COPY . /app
-
-# Disable development dependencies
-ENV UV_NO_DEV=1
-
-# Sync the project into a new environment, asserting the lockfile is up to date
+FROM python AS build
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
-RUN uv sync --locked
-# Presuming there is a `my_app` command provided by the project
-RUN uv run dummy.py
-CMD ["uv", "run", "fastapi","dev","src/api.py","--host","0.0.0.0","--port","8000"]
+ENV UV_LINK_MODE=copy
+RUN --mount=type=cache,target=/var/cache/apk \
+    --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    : \
+    && uv sync --no-dev --locked \
+    && :
+
+FROM python AS base
+COPY --parents --from=build /app/.venv /
+WORKDIR /app
+COPY ./src ./
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=0
+
+FROM base AS production
+CMD ["fastapi", "run", "--workers", "4", "api.py"]
+
+FROM base AS development
+CMD ["fastapi", "dev", "api.py"]
+
