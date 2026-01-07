@@ -1,5 +1,6 @@
 import { Star, Eye, Heart } from 'lucide-react';
 import { Movie } from '../data/movies';
+import { useNavigate } from "react-router-dom";
 
 interface MovieCardProps {
 	movie: Movie;
@@ -8,8 +9,10 @@ interface MovieCardProps {
 }
 
 export function MovieCard({ movie, onClick, showStats = true }: MovieCardProps) {
+	const navigate = useNavigate();
+
 	return (
-		<div onClick={onClick} className="group cursor-pointer movie-card">
+		<div onClick={() =>  navigate(`/movie/${movie.id}`)} className="group cursor-pointer movie-card">
 			<div className="relative aspect-[2/3] rounded-md overflow-hidden mb-2 bg-[#1a1f29]">
 				<img src={movie.poster} alt={movie.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"/>
 				{/* Rating badge */}

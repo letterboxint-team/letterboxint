@@ -4,9 +4,10 @@ import { Movie } from '../data/movies';
 import { UiReview } from '../api/backend';
 import { MovieCard } from './MovieCard';
 import { ReviewCard } from './ReviewCard';
+import { useParams } from "react-router-dom";
+
 
 interface MovieDetailProps {
-  movieId: number;
   movies: Movie[];
   reviews: UiReview[];
   canReview: boolean;
@@ -21,15 +22,15 @@ interface MovieDetailProps {
 }
 
 export function MovieDetail({
-  movieId,
   movies,
   reviews,
   canReview,
   onCreateReview,
   onMovieClick,
 }: MovieDetailProps) {
-  const movie = movies.find((item) => item.id === movieId);
-  const movieReviews = reviews.filter((review) => review.movieId === movieId);
+  const { movieId } = useParams();
+  const movie = movies.find((item) => item.id === Number(movieId));
+  const movieReviews = reviews.filter((review) => review.movieId === Number(movieId));
 
   const [userRating, setUserRating] = useState(movie?.userRating || 0);
   const [isWatched, setIsWatched] = useState(movie?.watched || movieReviews.length > 0);
@@ -58,7 +59,10 @@ export function MovieDetail({
   }
 
   const similarMovies = movies
-    .filter((m) => m.id !== movieId && m.genre.some((g) => movie.genre.includes(g)))
+    // .filter((m) => m.id !== movieId && m.genre.some((g) => movie.genre.includes(g)))
+    // removed the m.id !== movieId check
+    // maybe to re include later
+    .filter((m) => m.genre.some((g) => movie.genre.includes(g)))
     .slice(0, 6);
 
   const averageNote = Number(movie.rating || 0).toFixed(1);

@@ -21,6 +21,8 @@ import {
 } from './api/backend';
 import AuthBar from './components/AuthBar';
 import { Movie } from './data/movies';
+import { Routes, Route, useNavigate } from "react-router-dom";
+
 
 type Page = 'home' | 'movie' | 'profile' | 'lists' | 'activity';
 
@@ -155,60 +157,96 @@ export default function App() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#14181c]">
-      <Header currentPage={currentPage} onNavigate={navigateToPage} onSelectMovie={handleSearchSelect} />
-      <AuthBar
-        activeUser={activeUser}
-        onLogin={(u, p) => handleAuth('login', u, p)}
-        onSignup={(u, p) => handleAuth('signup', u, p)}
-        onLogout={handleLogout}
-      />
+  const navigate = useNavigate();
 
-      <main>
-        {loading ? (
-          <div className="text-white text-center py-16">Chargement des données...</div>
-        ) : (
-          <>
-            {error && (
-              <div className="bg-[#2c3440] text-yellow-200 px-4 py-3 text-center">
-                {error}
-              </div>
-            )}
-            {currentPage === 'home' && (
-              <HomePage movies={movies} reviews={reviews} onMovieClick={navigateToMovie} />
-            )}
-            {currentPage === 'movie' && selectedMovieId && (
-              <MovieDetail
-                movieId={selectedMovieId}
-                movies={movies}
-                reviews={reviews}
-                canReview={Boolean(activeUser)}
-                onCreateReview={handleCreateReview}
-                onMovieClick={navigateToMovie}
-              />
-            )}
-            {currentPage === 'profile' && (
-              <UserProfile
-                movies={movies}
-                reviews={reviews}
-                activeUser={activeUser}
-                onMovieClick={navigateToMovie}
-              />
-            )}
-            {currentPage === 'lists' && (
-              <Lists movies={movies} onMovieClick={navigateToMovie} />
-            )}
-            {currentPage === 'activity' && (
-              <Activity
-                movies={movies}
-                reviews={reviews}
-                onMovieClick={navigateToMovie}
-              />
-            )}
-          </>
-        )}
-      </main>
-    </div>
-  );
+  return (
+  <div className="min-h-screen bg-[#14181c]">
+    <Header
+      onNavigate={(path) => navigate(path)}
+      onSelectMovie={(id) => navigate(`/movie/${id}`)}
+    />
+
+    <AuthBar
+      activeUser={activeUser}
+      onLogin={(u, p) => handleAuth('login', u, p)}
+      onSignup={(u, p) => handleAuth('signup', u, p)}
+      onLogout={handleLogout}
+    />
+
+    <main>
+      {loading ? (
+        <div className="text-white text-center py-16">
+          Chargement des données...
+        </div>
+      ) : (
+        <>
+          {error && (
+            <div className="bg-[#2c3440] text-yellow-200 px-4 py-3 text-center">
+              {error}
+            </div>
+          )}
+
+          <Routes>
+            <Route
+              path="/home"
+              element={
+                <HomePage
+                  movies={movies}
+                  reviews={reviews}
+                  onMovieClick={(id) => navigate(`/movie/${id}`)}
+                />
+              }
+            />
+
+            <Route
+              path="/movie/:movieId"
+              element={
+                <MovieDetail
+                  movies={movies}
+                  reviews={reviews}
+                  canReview={Boolean(activeUser)}
+                  onCreateReview={handleCreateReview}
+                  onMovieClick={(id) => navigate(`/movie/${id}`)}
+                />
+              }
+            />
+
+            <Route
+              path="/profile"
+              element={
+                <UserProfile
+                  movies={movies}
+                  reviews={reviews}
+                  activeUser={activeUser}
+                  onMovieClick={(id) => navigate(`/movie/${id}`)}
+                />
+              }
+            />
+
+            <Route
+              path="/lists"
+              element={
+                <Lists
+                  movies={movies}
+                  onMovieClick={(id) => navigate(`/movie/${id}`)}
+                />
+              }
+            />
+
+            <Route
+              path="/activity"
+              element={
+                <Activity
+                  movies={movies}
+                  reviews={reviews}
+                  onMovieClick={(id) => navigate(`/movie/${id}`)}
+                />
+              }
+            />
+          </Routes>
+        </>
+      )}
+    </main>
+  </div>
+);
 }
