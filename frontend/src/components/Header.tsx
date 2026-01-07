@@ -4,12 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 type Page = 'home' | 'movie' | 'profile' | 'lists' | 'activity';
 
 interface HeaderProps {
-  currentPage: Page;
   onNavigate: (page: Page) => void;
   onSelectMovie?: (movieId: number) => void;
 }
 
-export function Header({ currentPage, onNavigate, onSelectMovie }: HeaderProps) {
+export function Header({ onNavigate, onSelectMovie }: HeaderProps) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Array<{ id: number; title: string; poster_path?: string | null; release_date?: string | null }>>([]);
   const [open, setOpen] = useState(false);
@@ -80,6 +79,12 @@ export function Header({ currentPage, onNavigate, onSelectMovie }: HeaderProps) 
 
   const posterUrl = (path?: string | null) =>
     path ? `https://image.tmdb.org/t/p/w92${path}` : undefined;
+
+
+  // get current page from URL
+  const currentPage = window.location.pathname.split('/')[1];
+  console.log('Current Page:', currentPage);
+
   return (
     <header className="bg-[#1a1f29] border-b border-[#2c3440] sticky top-0 z-50">
       <div className="container mx-auto px-4">
