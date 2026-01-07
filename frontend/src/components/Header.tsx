@@ -83,7 +83,6 @@ export function Header({ onNavigate, onSelectMovie }: HeaderProps) {
 
   // get current page from URL
   const currentPage = window.location.pathname.split('/')[1];
-  console.log('Current Page:', currentPage);
 
   return (
     <header className="bg-[#1a1f29] border-b border-[#2c3440] sticky top-0 z-50">
