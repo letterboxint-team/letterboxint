@@ -1,6 +1,6 @@
 import { Movie } from '../data/movies';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = 'http://localhost:8000'.replace(/\/$/, '');
 const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
 export interface ApiMovie {
@@ -126,7 +126,7 @@ export async function createReview(
   payload: CreateReviewPayload,
   token?: string
 ): Promise<ApiReview> {
-  return postJson<ApiReview>('/reviews', payload, token);
+  return postJson<ApiReview>('/reviews', payload);
 }
 
 export function reviewAverage(review: ApiReview): number {

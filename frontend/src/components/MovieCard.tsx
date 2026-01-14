@@ -4,11 +4,10 @@ import { useNavigate } from "react-router-dom";
 
 interface MovieCardProps {
 	movie: Movie;
-	onClick: () => void;
 	showStats?: boolean;
 }
 
-export function MovieCard({ movie, onClick, showStats = true }: MovieCardProps) {
+export function MovieCard({ movie, showStats = true }: MovieCardProps) {
 	const navigate = useNavigate();
 
 	return (

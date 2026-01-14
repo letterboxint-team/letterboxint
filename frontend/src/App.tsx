@@ -24,11 +24,11 @@ import { Movie } from './data/movies';
 import { Routes, Route, useNavigate } from "react-router-dom";
 
 
-type Page = 'home' | 'movie' | 'profile' | 'lists' | 'activity';
+// type Page = 'home' | 'movie' | 'profile' | 'lists' | 'activity';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('home');
-  const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
+  // const [currentPage, setCurrentPage] = useState<Page>('home');
+  // const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [reviews, setReviews] = useState<UiReview[]>([]);
   const [users, setUsers] = useState<ApiUser[]>([]);
@@ -73,32 +73,32 @@ export default function App() {
     loadData();
   }, []);
 
-  const navigateToMovie = (movieId: number) => {
-    setSelectedMovieId(movieId);
-    setCurrentPage('movie');
-  };
+  // const navigateToMovie = (movieId: number) => {
+  //   setSelectedMovieId(movieId);
+  //   setCurrentPage('movie');
+  // };
 
-  const navigateToPage = (page: Page) => {
-    setCurrentPage(page);
-  };
+  // const navigateToPage = (page: Page) => {
+  //   setCurrentPage(page);
+  // };
 
-  const handleSearchSelect = async (movieId: number) => {
-    try {
-      const API_BASE_URL = ((import.meta as any).env?.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-      // Ensure the movie exists in backend DB (read_movie will add if missing)
-      await fetch(`${API_BASE_URL}/movies/${movieId}`);
-      // Refresh movies so MovieDetail can find it
-      const apiMovies = await fetchMovies();
-      const apiReviews = await fetchReviews();
-      const reviewStats = getReviewStatsByMovie(apiReviews);
-      const uiMovies = mapApiMoviesToUiMovies(apiMovies, reviewStats);
-      setMovies(uiMovies);
-      navigateToMovie(movieId);
-    } catch (err) {
-      console.error('Search select error', err);
-      setError("Impossible d'afficher le film recherché.");
-    }
-  };
+  // const handleSearchSelect = async (movieId: number) => {
+  //   try {
+  //     const API_BASE_URL = ((import.meta as any).env?.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+  //     // Ensure the movie exists in backend DB (read_movie will add if missing)
+  //     await fetch(`${API_BASE_URL}/movies/${movieId}`);
+  //     // Refresh movies so MovieDetail can find it
+  //     const apiMovies = await fetchMovies();
+  //     const apiReviews = await fetchReviews();
+  //     const reviewStats = getReviewStatsByMovie(apiReviews);
+  //     const uiMovies = mapApiMoviesToUiMovies(apiMovies, reviewStats);
+  //     setMovies(uiMovies);
+  //     navigateToMovie(movieId);
+  //   } catch (err) {
+  //     console.error('Search select error', err);
+  //     setError("Impossible d'afficher le film recherché.");
+  //   }
+  // };
 
   const handleAuth = async (mode: 'login' | 'signup', username: string, password: string) => {
     try {

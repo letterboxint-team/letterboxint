@@ -84,7 +84,7 @@ export function HomePage({ movies, reviews, onMovieClick }: HomePageProps) {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {popularMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} onClick={() => onMovieClick(movie.id)} />
+              <MovieCard key={movie.id} movie={movie} />
             ))}
           </div>
         </section>
@@ -98,7 +98,7 @@ export function HomePage({ movies, reviews, onMovieClick }: HomePageProps) {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {recentlyWatched.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} onClick={() => onMovieClick(movie.id)} />
+              <MovieCard key={movie.id} movie={movie} />
             ))}
           </div>
         </section>
@@ -115,7 +115,7 @@ export function HomePage({ movies, reviews, onMovieClick }: HomePageProps) {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {newReleases.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} onClick={() => onMovieClick(movie.id)} />
+              <MovieCard key={movie.id} movie={movie} />
             ))}
           </div>
         </section>
