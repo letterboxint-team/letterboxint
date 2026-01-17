@@ -107,8 +107,12 @@ async function postJson<T>(path: string, data: unknown): Promise<T> {
 }
 
 
-export async function fetchMovies(): Promise<ApiMovie[]> {
-  return fetchJson<ApiMovie[]>('/movies');
+export async function fetchMovies(): Promise<ApiUIMovie[]> {
+  return fetchJson<ApiUIMovie[]>('/movies');
+}
+
+export async function fetchMovie(id: number): Promise<ApiMovieDetail> {
+  return fetchJson<ApiMovieDetail>(`/movies/${id}`);
 }
 
 export async function fetchUsers(): Promise<ApiUser[]> {
