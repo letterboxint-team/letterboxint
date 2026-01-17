@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { MovieCard } from './MovieCard';
 import { Movie } from '../data/movies';
 import { UiReview } from '../api/backend';
@@ -6,9 +7,14 @@ interface HomePageProps {
   movies: Movie[];
   reviews: UiReview[];
   onMovieClick: (movieId: number) => void;
+  onRefresh?: () => void;
 }
 
-export function HomePage({ movies, reviews, onMovieClick }: HomePageProps) {
+export function HomePage({ movies, reviews, onMovieClick, onRefresh }: HomePageProps) {
+  useEffect(() => {
+    onRefresh?.();
+  }, []);
+
   const popularMovies = [...movies]
     .sort((a, b) => (b.rating || 0) - (a.rating || 0))
     .slice(0, 6);
@@ -37,9 +43,9 @@ export function HomePage({ movies, reviews, onMovieClick }: HomePageProps) {
   const averageRating =
     movies.length > 0
       ? (
-          movies.reduce((sum, movie) => sum + (movie.rating || 0), 0) /
-          movies.length
-        ).toFixed(1)
+        movies.reduce((sum, movie) => sum + (movie.rating || 0), 0) /
+        movies.length
+      ).toFixed(1)
       : '0';
 
   return (
