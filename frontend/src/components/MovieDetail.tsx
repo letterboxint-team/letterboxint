@@ -72,7 +72,7 @@ export function MovieDetail({
   return (
     <div className="pb-12">
       {/* Hero Section */}
-      <div className="relative h-[600px] mb-8">
+      <div className="relative h-[600px] mb-8 overflow-hidden">
         <div className="absolute inset-0">
           <img
             src={movie.poster}
