@@ -9,7 +9,7 @@ from sqlmodel import SQLModel, create_engine, Session
 from models import User
 from fastapi import HTTPException, status, Body
 from sqlmodel import select
-from models import Movie, Review
+from models import Movie, Review, UIMovie
 import os
 import jwt
 from fastapi.responses import JSONResponse
@@ -97,7 +97,7 @@ def logout():
 def list_movies():
     with Session(engine) as session:
         movies = session.exec(select(Movie)).all()
-        return movies
+        return [UIMovie(**movie.model_dump()) for movie in movies]
 
 
 @app.get("/movies/search/")
