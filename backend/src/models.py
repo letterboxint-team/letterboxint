@@ -20,6 +20,7 @@ class Review(SQLModel, table=True):
     note_scenario: int
     date_reviewed: date = Field(default_factory=date.today)
     favorite: bool = Field(default=False)
+    comment: Optional[str] = Field(default=None)
 
 
 class Movie(SQLModel, table=True):

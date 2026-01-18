@@ -40,6 +40,7 @@ export interface ApiReview {
   note_scenario: number;
   date_reviewed: string;
   favorite: boolean;
+  comment?: string | null;
 }
 
 export interface LoginResponse {
@@ -54,6 +55,7 @@ export interface CreateReviewPayload {
   note_action: number;
   note_scenario: number;
   favorite?: boolean;
+  comment?: string;
 }
 
 export interface ReviewStats {
@@ -78,6 +80,7 @@ export interface UiReview {
   };
   date: string;
   favorite: boolean;
+  comment?: string;
 }
 
 const defaultPoster =
@@ -243,6 +246,7 @@ export function mapApiReviewsToUiReviews(
       },
       date: review.date_reviewed,
       favorite: review.favorite,
+      comment: review.comment || undefined,
     };
   });
 }

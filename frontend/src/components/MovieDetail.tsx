@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Star, Eye, Heart, Clock, Plus, Check } from 'lucide-react';
+import { Star, Eye, Heart, Clock, Plus, Check, PenTool } from 'lucide-react';
 import { Movie } from '../data/movies';
 import { UiReview, fetchMovie, parseGenres } from '../api/backend';
 import { MovieCard } from './MovieCard';
 import { ReviewCard } from './ReviewCard';
+import { ReviewModal } from './ReviewModal';
 import { useParams } from "react-router-dom";
 
 
@@ -17,6 +18,7 @@ interface MovieDetailProps {
     note_action: number;
     note_scenario: number;
     favorite?: boolean;
+    comment: string;
   }) => void;
   onMovieClick: (movieId: number) => void;
 }
@@ -43,13 +45,7 @@ export function MovieDetail({
   const [isWatched, setIsWatched] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [hoveredStar, setHoveredStar] = useState(0);
-  const [form, setForm] = useState({
-    note_visual: 3,
-    note_action: 3,
-    note_scenario: 3,
-    favorite: false,
-  });
-  const [submitting, setSubmitting] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   useEffect(() => {
     const id = Number(movieId);
@@ -60,6 +56,7 @@ export function MovieDetail({
       .then((detail) => {
         // Map ApiMovieDetail back to internal Movie interface
         console.log("Movie Details from API:", detail);
+        console.log("Movie Reviews from API:", movieReviews);
         const mapped: Movie = {
           id: detail.id,
           title: detail.title,
@@ -182,7 +179,7 @@ export function MovieDetail({
                   <div className="text-gray-400 text-sm mb-1">Note moyenne (backend)</div>
                   <div className="flex items-center gap-2">
                     <Star className="text-[#00c030] fill-[#00c030]" size={24} />
-                    <span className="text-white text-2xl">{averageNote}</span>
+                    <span className="text-white text-2xl">{movieDetail.rating}</span>
                     <span className="text-gray-400">/5</span>
                   </div>
                 </div>
@@ -239,11 +236,34 @@ export function MovieDetail({
                   <Plus size={18} />
                   Ajouter à une liste
                 </button>
+
+                {canReview && (
+                  <button
+                    onClick={() => setIsReviewModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#1a1f29] text-gray-300 rounded-md hover:bg-[#2c3440] transition-colors"
+                  >
+                    <PenTool size={18} />
+                    Critiquer
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        movieTitle={movie.title}
+        onSubmit={async (payload) => {
+          await onCreateReview({
+            movie_id: Number(movieId),
+            ...payload
+          });
+          setIsReviewModalOpen(false);
+        }}
+      />
 
       <div className="container mx-auto px-4">
         {/* Synopsis */}
@@ -279,74 +299,22 @@ export function MovieDetail({
               <span>{movieReviews.length} critique(s)</span>
             </div>
           </div>
-          {canReview ? (
-            <div className="bg-[#1a1f29] rounded-lg p-4 mb-4">
-              <h3 className="text-white mb-3">Publier une critique</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {(['note_visual', 'note_action', 'note_scenario'] as const).map((field) => (
-                  <label key={field} className="text-gray-300 text-sm flex flex-col gap-1">
-                    {field.replace('note_', 'Note ')} (0-5)
-                    <input
-                      type="number"
-                      min={0}
-                      max={5}
-                      value={form[field]}
-                      onChange={(e) =>
-                        setForm((prev) => ({ ...prev, [field]: Number(e.target.value) }))
-                      }
-                      className="bg-[#14181c] text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00c030]"
-                    />
-                  </label>
+
+          {/* Review form moved to modal */}
+          {
+            movieReviews.length > 0 ? (
+              <div className="space-y-4">
+                {movieReviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
                 ))}
               </div>
-              <div className="flex items-center gap-3 mt-3">
-                <label className="flex items-center gap-2 text-gray-300 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.favorite}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, favorite: e.target.checked }))
-                    }
-                    className="accent-[#00c030]"
-                  />
-                  Coup de coeur
-                </label>
-                <button
-                  disabled={submitting}
-                  onClick={async () => {
-                    setSubmitting(true);
-                    await onCreateReview({
-                      movie_id: Number(movieId),
-                      note_visual: form.note_visual,
-                      note_action: form.note_action,
-                      note_scenario: form.note_scenario,
-                      favorite: form.favorite,
-                    });
-                    setSubmitting(false);
-                  }}
-                  className="px-4 py-2 bg-[#00c030] text-white rounded-md hover:bg-[#00d436] transition-colors disabled:opacity-50"
-                >
-                  {submitting ? 'Envoi...' : 'Publier'}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-400 mb-4">
-              Connectez-vous pour publier une critique.
-            </p>
-          )}
-          {movieReviews.length > 0 ? (
-            <div className="space-y-4">
-              {movieReviews.map((review) => (
-                <ReviewCard key={review.id} review={review} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-400">
-              Aucune critique n'a encore été publiée pour ce film via l'API FastAPI.
-            </p>
-          )}
-        </section>
+            ) : (
+              <p className="text-gray-400">
+                Aucune critique n'a encore été publiée pour ce film via l'API FastAPI.
+              </p>
+            )
+          }
+        </section >
 
         {/* Similar movies */}
         {similarMovies.length > 0 && (
