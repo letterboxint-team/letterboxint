@@ -83,7 +83,7 @@ export function HomePage({ movies, reviews, onMovieClick, onRefresh }: HomePageP
       {popularMovies.length > 0 && (
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-white text-2xl">Populaires cette semaine</h2>
+            <h2 className="text-white text-2xl">Les mieux notés</h2>
             <button className="text-[#00c030] text-sm hover:opacity-80">
               Voir tout
             </button>

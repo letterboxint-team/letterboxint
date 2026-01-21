@@ -101,9 +101,7 @@ export function Activity({ movies, reviews, onMovieClick }: ActivityProps) {
         <button className="pb-4 text-gray-400 hover:text-white transition-colors">
           Amis
         </button>
-        <button className="pb-4 text-gray-400 hover:text-white transition-colors">
-          Populaires
-        </button>
+
       </div>
 
       {/* Activity Feed */}
