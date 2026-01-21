@@ -9,7 +9,7 @@ from sqlmodel import SQLModel, create_engine, Session
 from models import User
 from fastapi import HTTPException, status, Body
 from sqlmodel import select
-from models import Movie, Review
+from models import Movie, Review, UIMovie
 import os
 import jwt
 from fastapi.responses import JSONResponse
@@ -97,7 +97,7 @@ def logout():
 def list_movies():
     with Session(engine) as session:
         movies = session.exec(select(Movie)).all()
-        return movies
+        return [UIMovie(**movie.model_dump()) for movie in movies]
 
 
 @app.get("/movies/search/")
@@ -137,6 +137,29 @@ def create_review(review: Review):
         session.add(review)
         session.commit()
         session.refresh(review)
+
+        # Update global rating
+        reviews = session.exec(select(Review).where(Review.movie_id == review.movie_id)).all()
+        print(reviews)
+        if reviews:
+             # Average of visual, action, scenario notes for all reviews? 
+             # Or just average of averages? 
+             # User didn't specify, I will take the average of (avg of 3 notes) for each review.
+             # Actually, simpler: just average of all notes effectively.
+             # Let's say a review rating is average of its 3 notes.
+
+             total_score = 0
+             count = 0
+             for r in reviews:
+                 avg_review = (r.note_visual + r.note_action + r.note_scenario) / 3.0
+                 total_score += avg_review
+                 count += 1
+             
+             new_global_rating = total_score / count if count > 0 else None
+             movie.global_rating = new_global_rating
+             session.add(movie)
+             session.commit()
+
         return review
 
 

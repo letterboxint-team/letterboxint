@@ -20,18 +20,29 @@ class Review(SQLModel, table=True):
     note_scenario: int
     date_reviewed: date = Field(default_factory=date.today)
     favorite: bool = Field(default=False)
+    comment: Optional[str] = Field(default=None)
 
 
 class Movie(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str
     director: str
-    release_year: int | None
+    release_year: int | None = None
+    runtime: int | None = None
+    synopsis: str | None = None
     genre: str
     poster_path: str
+    global_rating: float | None = Field(default=None)
 
 
-class Friendship(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id_1: int = Field(foreign_key="user.id")
-    user_id_2: int = Field(foreign_key="user.id")
+class UIMovie(SQLModel):
+    id: int
+    title: str
+    release_year: int | None
+    poster_path: str
+    global_rating: float | None
+
+
+
+
+

@@ -35,6 +35,9 @@ def add_movie(movie_id: int):
         else None,
         genre=", ".join([genre["name"] for genre in movie_data.get("genres", [])]),
         poster_path=movie_data.get("poster_path", ""),
+        synopsis=movie_data.get("overview", ""),
+        runtime=movie_data.get("runtime"),
+        global_rating=None,
     )
     with Session(engine) as session:
         session.add(movie)

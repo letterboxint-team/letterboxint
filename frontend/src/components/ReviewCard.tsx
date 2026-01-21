@@ -55,10 +55,13 @@ export function ReviewCard({ review }: ReviewCardProps) {
                 Visuel {review.breakdown.visual}/5 · Action {review.breakdown.action}/5 · Scénario{' '}
                 {review.breakdown.scenario}/5
               </p>
-              <p className="text-gray-500 text-xs mt-1">Note moyenne {review.averageRating}/5</p>
-              {review.movieTitle && (
-                <p className="text-gray-500 text-xs">Film : {review.movieTitle}</p>
+              {review.comment && (
+                <p className="text-gray-300 text-sm mt-3 italic">"{review.comment}"</p>
               )}
+              <p className="text-gray-500 text-xs mt-2">Note moyenne {review.averageRating}/5</p>
+              {/* {review.movieTitle && (
+                <p className="text-gray-500 text-xs">Film : {review.movieTitle}</p>
+              )} */}
             </div>
 
             {review.favorite && (

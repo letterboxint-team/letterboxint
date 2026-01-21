@@ -71,7 +71,7 @@ export function Header({ onNavigate, onSelectMovie }: HeaderProps) {
   }, [query, API_BASE_URL]);
 
   const selectSuggestion = (movieId: number, title?: string) => {
-    if (title) setQuery(title);
+    setQuery(''); // Clear query to avoid re-triggering search
     setOpen(false);
     setSuggestions([]);
     onSelectMovie?.(movieId);
@@ -89,42 +89,39 @@ export function Header({ onNavigate, onSelectMovie }: HeaderProps) {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
-            <button 
+            <button
               onClick={() => onNavigate('home')}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
               <Film className="text-[#00c030]" size={28} />
               <span className="text-white text-xl">Letterbox'INT</span>
             </button>
-            
+
             <nav className="hidden md:flex items-center gap-6">
               <button
                 onClick={() => onNavigate('home')}
-                className={`text-sm transition-colors ${
-                  currentPage === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'
-                }`}
+                className={`text-sm transition-colors ${currentPage === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'
+                  }`}
               >
                 Films
               </button>
               <button
                 onClick={() => onNavigate('lists')}
-                className={`text-sm transition-colors ${
-                  currentPage === 'lists' ? 'text-white' : 'text-gray-400 hover:text-white'
-                }`}
+                className={`text-sm transition-colors ${currentPage === 'lists' ? 'text-white' : 'text-gray-400 hover:text-white'
+                  }`}
               >
                 Listes
               </button>
               <button
                 onClick={() => onNavigate('activity')}
-                className={`text-sm transition-colors ${
-                  currentPage === 'activity' ? 'text-white' : 'text-gray-400 hover:text-white'
-                }`}
+                className={`text-sm transition-colors ${currentPage === 'activity' ? 'text-white' : 'text-gray-400 hover:text-white'
+                  }`}
               >
                 Activité
               </button>
             </nav>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block">
               <input
@@ -192,7 +189,7 @@ export function Header({ onNavigate, onSelectMovie }: HeaderProps) {
                 </div>
               )}
             </div>
-            
+
             <button
               onClick={() => onNavigate('profile')}
               className="w-8 h-8 bg-[#00c030] rounded-full flex items-center justify-center hover:bg-[#00d436] transition-colors"

@@ -34,24 +34,24 @@ dummy_users = [
     User(
         id=1,
         username="john_doe",
-        password_hash="hashed_password_1",
+        password_hash="pswd1",
         created_at="2023-01-01",
         profile_picture=None,
     ),
     User(
         id=2,
         username="jane_smith",
-        password_hash="hashed_password_2",
+        password_hash="pswd2",
         created_at="2023-02-01",
         profile_picture=None,
     ),
 ]
 dummy_reviews = [
-    Review(id=1, user_id=1, movie_id=1, note_visual=9, note_action=8, note_scenario=9),
+    Review(id=1, user_id=1, movie_id=630240, note_visual=9, note_action=8, note_scenario=9),
     Review(
         id=2,
-        user_id=2,
-        movie_id=2,
+        user_id=1,
+        movie_id=299534,
         note_visual=10,
         note_action=9,
         note_scenario=10,
@@ -69,10 +69,10 @@ def add_dummy_data(engine):
         #     session.add(movie)
         for user in dummy_users:
             session.add(user)
-        for review in dummy_reviews:
-            session.add(review)
-        for friendship in dummy_friendships:
-            session.add(friendship)
+        # for review in dummy_reviews:
+        #     session.add(review)
+        # for friendship in dummy_friendships:
+        #     session.add(friendship)
         session.commit()
 
 

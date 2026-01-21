@@ -3,13 +3,24 @@ import { Movie } from '../data/movies';
 const API_BASE_URL = 'http://localhost:8000'.replace(/\/$/, '');
 const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
-export interface ApiMovie {
+export interface ApiUIMovie {
+  id: number;
+  title: string;
+  release_year?: number | null;
+  poster_path?: string | null;
+  global_rating?: number | null;
+}
+
+export interface ApiMovieDetail {
   id: number;
   title: string;
   director: string;
   release_year?: number | null;
-  genre?: string | null;
-  poster_path?: string | null;
+  genre: string;
+  poster_path: string;
+  synopsis?: string | null;
+  runtime?: number | null;
+  global_rating?: number | null;
 }
 
 export interface ApiUser {
@@ -29,6 +40,7 @@ export interface ApiReview {
   note_scenario: number;
   date_reviewed: string;
   favorite: boolean;
+  comment?: string | null;
 }
 
 export interface LoginResponse {
@@ -43,6 +55,7 @@ export interface CreateReviewPayload {
   note_action: number;
   note_scenario: number;
   favorite?: boolean;
+  comment?: string;
 }
 
 export interface ReviewStats {
@@ -67,6 +80,7 @@ export interface UiReview {
   };
   date: string;
   favorite: boolean;
+  comment?: string;
 }
 
 const defaultPoster =
@@ -96,8 +110,12 @@ async function postJson<T>(path: string, data: unknown): Promise<T> {
 }
 
 
-export async function fetchMovies(): Promise<ApiMovie[]> {
-  return fetchJson<ApiMovie[]>('/movies');
+export async function fetchMovies(): Promise<ApiUIMovie[]> {
+  return fetchJson<ApiUIMovie[]>('/movies');
+}
+
+export async function fetchMovie(id: number): Promise<ApiMovieDetail> {
+  return fetchJson<ApiMovieDetail>(`/movies/${id}`);
 }
 
 export async function fetchUsers(): Promise<ApiUser[]> {
@@ -165,7 +183,7 @@ export function parseGenres(rawGenre: string | string[] | undefined): string[] {
     .filter(Boolean);
 }
 
-function posterForMovie(apiMovie: ApiMovie) {
+function posterForMovie(apiMovie: ApiUIMovie | ApiMovieDetail) {
   if (apiMovie.poster_path) {
     return apiMovie.poster_path.startsWith('http')
       ? apiMovie.poster_path
@@ -175,7 +193,7 @@ function posterForMovie(apiMovie: ApiMovie) {
 }
 
 export function mapApiMoviesToUiMovies(
-  apiMovies: ApiMovie[],
+  apiMovies: ApiUIMovie[],
   reviewStats: Record<number, ReviewStats>
 ): Movie[] {
   return apiMovies.map((apiMovie) => {
@@ -185,14 +203,14 @@ export function mapApiMoviesToUiMovies(
       id: apiMovie.id,
       title: apiMovie.title,
       year: apiMovie.release_year || 0,
-      director: apiMovie.director,
+      director: '...', // Loaded in detail
       poster: posterForMovie(apiMovie),
-      rating: stats?.average ?? 0,
+      rating: apiMovie.global_rating ?? 0, // Use global_rating from backend
       userRating: undefined,
       watched: Boolean(stats?.count),
-      genre: parseGenres(apiMovie.genre),
-      runtime: 0,
-      synopsis: 'Synopsis non disponible pour le moment.',
+      genre: [], // Loaded in detail
+      runtime: 0, // Loaded in detail,
+      synopsis: '', // Loaded in detail
       cast: [],
       userReview: undefined,
     };
@@ -228,6 +246,7 @@ export function mapApiReviewsToUiReviews(
       },
       date: review.date_reviewed,
       favorite: review.favorite,
+      comment: review.comment || undefined,
     };
   });
 }
