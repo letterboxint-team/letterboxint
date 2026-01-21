@@ -66,7 +66,7 @@ export function Friends({ activeUser, allUsers }: FriendsProps) {
 
     if (!activeUser) {
         return (
-            <div className="container mx-auto px-4 py-8 text-center text-gray-400">
+            <div className="container mx-auto px-4 py-8 text-center text-gray-300">
                 Connectez-vous pour voir et ajouter des amis.
             </div>
         );
@@ -91,9 +91,9 @@ export function Friends({ activeUser, allUsers }: FriendsProps) {
                     </h2>
 
                     {loading ? (
-                        <div className="text-gray-400">Chargement...</div>
+                        <div className="text-gray-300">Chargement...</div>
                     ) : friends.length === 0 ? (
-                        <div className="text-gray-500 italic">Vous n'avez pas encore d'amis.</div>
+                        <div className="text-gray-400 italic">Vous n'avez pas encore d'amis.</div>
                     ) : (
                         <ul className="space-y-3">
                             {friends.map(friend => (
@@ -116,7 +116,7 @@ export function Friends({ activeUser, allUsers }: FriendsProps) {
 
                 {/* Add Friends */}
                 <div className="bg-[#1a1f29] rounded-xl p-6 border border-[#2c3440]">
-                    <h2 className="text-xl text-[#40bcf4] font-semibold mb-4 flex items-center gap-2">
+                    <h2 className="text-xl text-white font-semibold mb-4 flex items-center gap-2">
                         <UserPlus size={20} />
                         Ajouter des amis
                     </h2>
@@ -128,13 +128,13 @@ export function Friends({ activeUser, allUsers }: FriendsProps) {
                             placeholder="Rechercher un utilisateur..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#14181c] text-white pl-10 pr-4 py-2 rounded-lg border border-[#2c3440] focus:border-[#40bcf4] focus:outline-none focus:ring-1 focus:ring-[#40bcf4]"
+                            className="w-full bg-[#14181c] text-white placeholder-gray-400 pl-10 pr-4 py-2 rounded-lg border border-[#2c3440] focus:border-[#40bcf4] focus:outline-none focus:ring-1 focus:ring-[#40bcf4]"
                         />
                     </div>
 
                     <div className="space-y-3 max-h-[400px] overflow-y-auto">
                         {filteredUsers.length === 0 ? (
-                            <div className="text-gray-500 italic text-center py-4">
+                            <div className="text-gray-400 italic text-center py-4">
                                 {searchQuery ? "Aucun utilisateur trouvé." : "Recherchez des amis à ajouter."}
                             </div>
                         ) : (

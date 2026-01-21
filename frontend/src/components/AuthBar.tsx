@@ -18,14 +18,14 @@ export default function AuthBar({ activeUser, onLogin, onSignup, onLogout }: Aut
     <div className="bg-[#0f1217] border-b border-[#1f252f]">
       <div className="container mx-auto px-4 py-3 flex flex-col md:flex-row md:items-center gap-3">
         {activeUser ? (
-          <div className="flex items-center gap-3 text-gray-200">
+          <div className="flex items-center gap-3 text-white">
             <div className="w-8 h-8 rounded-full bg-[#00c030] text-white flex items-center justify-center text-sm">
               {activeUser.username.slice(0, 2).toUpperCase()}
             </div>
             <span>Connecté en tant que {activeUser.username}</span>
             <button
               onClick={onLogout}
-              className="px-3 py-2 text-sm bg-[#1a1f29] text-gray-200 rounded-md hover:bg-[#253042] transition-colors"
+              className="px-3 py-2 text-sm bg-[#1a1f29] text-white rounded-md hover:bg-[#253042] transition-colors border border-[#2c3440]"
             >
               Se déconnecter
             </button>
@@ -51,22 +51,20 @@ export default function AuthBar({ activeUser, onLogin, onSignup, onLogout }: Aut
               <button
                 onClick={() => onLogin(username, password)}
                 disabled={disabled}
-                className={`px-4 py-2 rounded-md text-sm ${
-                  disabled
-                    ? 'bg-[#2c3440] text-gray-500 cursor-not-allowed'
-                    : 'bg-[#00c030] text-white hover:bg-[#00d436]'
-                } transition-colors`}
+                className={`px-4 py-2 rounded-md text-sm ${disabled
+                  ? 'bg-[#2c3440] text-gray-500 cursor-not-allowed'
+                  : 'bg-[#00c030] text-white hover:bg-[#00d436]'
+                  } transition-colors`}
               >
                 Se connecter
               </button>
               <button
                 onClick={() => onSignup(username, password)}
                 disabled={disabled}
-                className={`px-4 py-2 rounded-md text-sm border ${
-                  disabled
-                    ? 'border-[#2c3440] text-gray-500 cursor-not-allowed'
-                    : 'border-[#00c030] text-[#00c030] hover:bg-[#0f1217]'
-                } transition-colors`}
+                className={`px-4 py-2 rounded-md text-sm border ${disabled
+                  ? 'border-[#2c3440] text-gray-500 cursor-not-allowed'
+                  : 'border-[#00c030] text-[#00c030] hover:bg-[#0f1217]'
+                  } transition-colors`}
               >
                 S'inscrire
               </button>

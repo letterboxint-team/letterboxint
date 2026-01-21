@@ -19,7 +19,7 @@ export function UserProfile({ movies, reviews, activeUser, onMovieClick }: UserP
   if (!activeUser) {
     return (
       <div className="container mx-auto px-4 py-12 text-center text-gray-400">
-        Aucun utilisateur n'a été renvoyé par le backend. Ajoutez un utilisateur via l'API.
+        Connectez-vous pour accéder à votre profil.
       </div>
     );
   }
