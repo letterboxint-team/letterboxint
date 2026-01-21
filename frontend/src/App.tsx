@@ -159,20 +159,34 @@ export default function App() {
   };
 
   const navigate = useNavigate();
+  const [isAuthBarVisible, setAuthBarVisible] = useState(false);
+
+  // Login handler needs to ensure bar stays visible or logic handles it (activeUser becomes true)
+  // Actually if activeUser is set, clean up isAuthBarVisible? 
+  // Let's keep it simple.
 
   return (
     <div className="min-h-screen bg-[#14181c]">
       <Header
-        onNavigate={(path) => navigate(path)}
+        onNavigate={(path) => navigate(`/${path}`)}
         onSelectMovie={(id) => navigate(`/movie/${id}`)}
+        isLoggedIn={Boolean(activeUser)}
+        onRequestLogin={() => {
+          if (!isAuthBarVisible) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+          setAuthBarVisible((prev) => !prev);
+        }}
       />
 
-      <AuthBar
-        activeUser={activeUser}
-        onLogin={(u, p) => handleAuth('login', u, p)}
-        onSignup={(u, p) => handleAuth('signup', u, p)}
-        onLogout={handleLogout}
-      />
+      {(activeUser || isAuthBarVisible) && (
+        <AuthBar
+          activeUser={activeUser}
+          onLogin={(u, p) => handleAuth('login', u, p)}
+          onSignup={(u, p) => handleAuth('signup', u, p)}
+          onLogout={handleLogout}
+        />
+      )}
 
       <main>
         {loading ? (
@@ -215,6 +229,10 @@ export default function App() {
                     canReview={Boolean(activeUser)}
                     onCreateReview={handleCreateReview}
                     onMovieClick={(id) => navigate(`/movie/${id}`)}
+                    onRequestLogin={() => {
+                      setAuthBarVisible(true);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                   />
                 }
               />

@@ -12,25 +12,25 @@ export function Lists({ movies, onMovieClick }: ListsProps) {
   const recentReleases = [...movies].sort((a, b) => (b.year || 0) - (a.year || 0)).slice(0, 4);
   const backendLists = movies.length
     ? [
-        {
-          id: 1,
-          name: 'Top notés',
-          description: 'Classement basé sur les notes agrégées du backend',
-          movieCount: movies.length,
-          isPublic: true,
-          likes: movies.length * 3,
-          movies: topRated,
-        },
-        {
-          id: 2,
-          name: 'Derniers ajouts',
-          description: 'Triés par année de sortie depuis l’API FastAPI',
-          movieCount: movies.length,
-          isPublic: true,
-          likes: Math.max(5, movies.length * 2),
-          movies: recentReleases,
-        },
-      ]
+      {
+        id: 1,
+        name: 'Top notés',
+        description: 'Classement basé sur les notes agrégées du backend',
+        movieCount: movies.length,
+        isPublic: true,
+        likes: movies.length * 3,
+        movies: topRated,
+      },
+      {
+        id: 2,
+        name: 'Derniers ajouts',
+        description: 'Triés par année de sortie depuis l’API FastAPI',
+        movieCount: movies.length,
+        isPublic: true,
+        likes: Math.max(5, movies.length * 2),
+        movies: recentReleases,
+      },
+    ]
     : [];
 
   const lists = backendLists;
@@ -40,7 +40,7 @@ export function Lists({ movies, onMovieClick }: ListsProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-white text-3xl mb-2">Mes listes</h1>
+          <h1 className="text-white text-3xl mb-2">Les listes</h1>
           <p className="text-gray-400">Les listes sont générées à partir des films remontés par le backend</p>
         </div>
 

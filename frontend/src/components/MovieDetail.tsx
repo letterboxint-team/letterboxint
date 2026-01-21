@@ -21,6 +21,7 @@ interface MovieDetailProps {
     comment: string;
   }) => void;
   onMovieClick: (movieId: number) => void;
+  onRequestLogin?: () => void;
 }
 
 export function MovieDetail({
@@ -29,6 +30,7 @@ export function MovieDetail({
   canReview,
   onCreateReview,
   onMovieClick,
+  onRequestLogin,
 }: MovieDetailProps) {
   const { movieId } = useParams();
 
@@ -173,83 +175,94 @@ export function MovieDetail({
                 ))}
               </div>
 
-              {/* Rating */}
-              <div className="flex items-center gap-6 mb-6">
-                <div>
-                  <div className="text-gray-400 text-sm mb-1">Note moyenne (backend)</div>
-                  <div className="flex items-center gap-2">
-                    {(movieDetail.rating || 0) > 0 ? (
-                      <>
-                        <Star className="text-[#00c030] fill-[#00c030]" size={24} />
-                        <span className="text-white text-2xl">{movieDetail.rating?.toFixed(1)}</span>
-                        <span className="text-gray-400">/5</span>
-                      </>
-                    ) : (
-                      <span className="text-white text-xl italic">Not yet reviewed</span>
-                    )}
+              {/* Rating - Only show if canReview */}
+              {canReview && (
+                <div className="flex items-center gap-6 mb-6">
+                  <div>
+                    <div className="text-gray-400 text-sm mb-1">Note moyenne</div>
+                    <div className="flex items-center gap-2">
+                      {(movieDetail.rating || 0) > 0 ? (
+                        <>
+                          <Star className="text-[#00c030] fill-[#00c030]" size={24} />
+                          <span className="text-white text-2xl">{movieDetail.rating?.toFixed(1)}</span>
+                          <span className="text-gray-400">/5</span>
+                        </>
+                      ) : (
+                        <span className="text-white text-xl italic">Not yet reviewed</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-gray-400 text-sm mb-1">Votre note</div>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onMouseEnter={() => setHoveredStar(star)}
+                          onMouseLeave={() => setHoveredStar(0)}
+                          onClick={() => setUserRating(star)}
+                        >
+                          <Star
+                            size={20}
+                            className={
+                              star <= (hoveredStar || userRating)
+                                ? 'text-[#00c030] fill-[#00c030]'
+                                : 'text-gray-600'
+                            }
+                          />
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
+              )}
 
-                <div>
-                  <div className="text-gray-400 text-sm mb-1">Votre note</div>
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onMouseEnter={() => setHoveredStar(star)}
-                        onMouseLeave={() => setHoveredStar(0)}
-                        onClick={() => setUserRating(star)}
-                      >
-                        <Star
-                          size={20}
-                          className={
-                            star <= (hoveredStar || userRating)
-                              ? 'text-[#00c030] fill-[#00c030]'
-                              : 'text-gray-600'
-                          }
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions */}
+              {/* Actions or Login Trigger */}
               <div className="flex gap-3">
-                <button
-                  onClick={() => setIsWatched(!isWatched)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${isWatched
-                    ? 'bg-[#00c030] text-white'
-                    : 'bg-[#1a1f29] text-gray-300 hover:bg-[#2c3440]'
-                    }`}
-                >
-                  {isWatched ? <Check size={18} /> : <Eye size={18} />}
-                  {isWatched ? 'Vu' : 'Marquer comme vu'}
-                </button>
+                {canReview ? (
+                  <>
+                    <button
+                      onClick={() => setIsWatched(!isWatched)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${isWatched
+                        ? 'bg-[#00c030] text-white'
+                        : 'bg-[#1a1f29] text-gray-300 hover:bg-[#2c3440]'
+                        }`}
+                    >
+                      {isWatched ? <Check size={18} /> : <Eye size={18} />}
+                      {isWatched ? 'Vu' : 'Marquer comme vu'}
+                    </button>
 
-                <button
-                  onClick={() => setIsLiked(!isLiked)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${isLiked
-                    ? 'bg-[#ff6b6b] text-white'
-                    : 'bg-[#1a1f29] text-gray-300 hover:bg-[#2c3440]'
-                    }`}
-                >
-                  <Heart size={18} className={isLiked ? 'fill-white' : ''} />
-                  J'aime
-                </button>
+                    <button
+                      onClick={() => setIsLiked(!isLiked)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${isLiked
+                        ? 'bg-[#ff6b6b] text-white'
+                        : 'bg-[#1a1f29] text-gray-300 hover:bg-[#2c3440]'
+                        }`}
+                    >
+                      <Heart size={18} className={isLiked ? 'fill-white' : ''} />
+                      J'aime
+                    </button>
 
-                <button className="flex items-center gap-2 px-4 py-2 bg-[#1a1f29] text-gray-300 rounded-md hover:bg-[#2c3440] transition-colors">
-                  <Plus size={18} />
-                  Ajouter à une liste
-                </button>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-[#1a1f29] text-gray-300 rounded-md hover:bg-[#2c3440] transition-colors">
+                      <Plus size={18} />
+                      Ajouter à une liste
+                    </button>
 
-                {canReview && (
+                    <button
+                      onClick={() => setIsReviewModalOpen(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#1a1f29] text-gray-300 rounded-md hover:bg-[#2c3440] transition-colors"
+                    >
+                      <PenTool size={18} />
+                      Critiquer
+                    </button>
+                  </>
+                ) : (
                   <button
-                    onClick={() => setIsReviewModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#1a1f29] text-gray-300 rounded-md hover:bg-[#2c3440] transition-colors"
+                    onClick={onRequestLogin}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#00c030] text-white rounded-md hover:bg-[#00d436] transition-colors font-medium"
                   >
-                    <PenTool size={18} />
-                    Critiquer
+                    Se connecter pour noter ou interagir
                   </button>
                 )}
               </div>

@@ -6,9 +6,11 @@ type Page = 'home' | 'movie' | 'profile' | 'lists' | 'activity' | 'friends';
 interface HeaderProps {
   onNavigate: (page: Page) => void;
   onSelectMovie?: (movieId: number) => void;
+  isLoggedIn?: boolean;
+  onRequestLogin?: () => void;
 }
 
-export function Header({ onNavigate, onSelectMovie }: HeaderProps) {
+export function Header({ onNavigate, onSelectMovie, isLoggedIn, onRequestLogin }: HeaderProps) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Array<{ id: number; title: string; poster_path?: string | null; release_date?: string | null }>>([]);
   const [open, setOpen] = useState(false);
@@ -198,7 +200,13 @@ export function Header({ onNavigate, onSelectMovie }: HeaderProps) {
             </div>
 
             <button
-              onClick={() => onNavigate('profile')}
+              onClick={() => {
+                if (!isLoggedIn && onRequestLogin) {
+                  onRequestLogin();
+                } else {
+                  onNavigate('profile');
+                }
+              }}
               className="w-8 h-8 bg-[#00c030] rounded-full flex items-center justify-center hover:bg-[#00d436] transition-colors"
             >
               <User size={16} className="text-white" />
