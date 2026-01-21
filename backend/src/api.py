@@ -217,6 +217,8 @@ def reviews_by_user(user_id: int):
         return reviews
 
 
+from sqlmodel import or_
+
 @app.post("/friends")
 def add_friend(payload: dict = Body(...)):
     user_id = payload.get("user_id")
@@ -226,10 +228,12 @@ def add_friend(payload: dict = Body(...)):
         raise HTTPException(status_code=400, detail="user_id and friend_id required")
         
     with Session(engine) as session:
-        # Check if friendship already exists
+        # Check if friendship already exists in either direction
         existing = session.exec(select(Friendship).where(
-            Friendship.user_id == user_id, 
-            Friendship.friend_id == friend_id
+            or_(
+                (Friendship.user_id == user_id) & (Friendship.friend_id == friend_id),
+                (Friendship.user_id == friend_id) & (Friendship.friend_id == user_id)
+            )
         )).first()
         
         if existing:
@@ -244,9 +248,18 @@ def add_friend(payload: dict = Body(...)):
 @app.get("/users/{user_id}/friends")
 def list_friends(user_id: int):
     with Session(engine) as session:
-        # Get all friend IDs
-        friendships = session.exec(select(Friendship).where(Friendship.user_id == user_id)).all()
-        friend_ids = [f.friend_id for f in friendships]
+        # Get all friendships where user is involved
+        friendships = session.exec(select(Friendship).where(
+            or_(Friendship.user_id == user_id, Friendship.friend_id == user_id)
+        )).all()
+        
+        # Extract the ID of the *other* person
+        friend_ids = []
+        for f in friendships:
+            if f.user_id == user_id:
+                friend_ids.append(f.friend_id)
+            else:
+                friend_ids.append(f.user_id)
         
         # Get user details for these friends
         friends = session.exec(select(User).where(User.id.in_(friend_ids))).all()

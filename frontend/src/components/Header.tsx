@@ -1,7 +1,7 @@
 import { Film, User, List, Activity, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-type Page = 'home' | 'movie' | 'profile' | 'lists' | 'activity';
+type Page = 'home' | 'movie' | 'profile' | 'lists' | 'activity' | 'friends';
 
 interface HeaderProps {
   onNavigate: (page: Page) => void;
@@ -118,6 +118,13 @@ export function Header({ onNavigate, onSelectMovie }: HeaderProps) {
                   }`}
               >
                 Activité
+              </button>
+              <button
+                onClick={() => onNavigate('friends')}
+                className={`text-sm transition-colors ${currentPage === 'friends' ? 'text-white' : 'text-gray-400 hover:text-white'
+                  }`}
+              >
+                Amis
               </button>
             </nav>
           </div>

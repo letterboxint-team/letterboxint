@@ -5,6 +5,7 @@ import { MovieDetail } from './components/MovieDetail';
 import { UserProfile } from './components/UserProfile';
 import { Lists } from './components/Lists';
 import { Activity } from './components/Activity';
+import { Friends } from './components/Friends';
 import {
   ApiUser,
   CreateReviewPayload,
@@ -248,6 +249,16 @@ export default function App() {
                     reviews={reviews}
                     onMovieClick={(id) => navigate(`/movie/${id}`)}
                     activeUser={activeUser}
+                  />
+                }
+              />
+
+              <Route
+                path="/friends"
+                element={
+                  <Friends
+                    activeUser={activeUser}
+                    allUsers={users}
                   />
                 }
               />
