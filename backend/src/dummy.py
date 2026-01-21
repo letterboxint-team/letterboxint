@@ -30,18 +30,23 @@ dummy_movies = [
         poster_path="",
     ),
 ]
+import hashlib
+
+def hash_pswd(pswd):
+    return hashlib.sha512(pswd.encode("utf-8")).hexdigest()
+
 dummy_users = [
     User(
         id=1,
         username="john_doe",
-        password_hash="pswd1",
+        password_hash=hash_pswd("pswd1"),
         created_at="2023-01-01",
         profile_picture=None,
     ),
     User(
         id=2,
         username="jane_smith",
-        password_hash="pswd2",
+        password_hash=hash_pswd("pswd2"),
         created_at="2023-02-01",
         profile_picture=None,
     ),

@@ -150,10 +150,20 @@ export async function fetchReviews(): Promise<ApiReview[]> {
   return fetchJson<ApiReview[]>('/reviews');
 }
 
+
+async function hashPassword(password: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-512', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+
 export async function signup(username: string, password: string): Promise<ApiUser> {
+  const password_hash = await hashPassword(password);
   return postJson<ApiUser>('/signup', {
     username,
-    password_hash: password,
+    password_hash,
   });
 }
 
@@ -162,9 +172,10 @@ export async function updateUser(userId: number, payload: { username?: string })
 }
 
 export async function login(username: string, password: string): Promise<LoginResponse> {
+  const password_hash = await hashPassword(password);
   return postJson<LoginResponse>('/login', {
     username,
-    password_hash: password,
+    password_hash,
   });
 }
 
