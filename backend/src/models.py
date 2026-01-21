@@ -38,6 +38,7 @@ class Movie(SQLModel, table=True):
 class UIMovie(SQLModel):
     id: int
     title: str
+    director: str
     release_year: int | None
     poster_path: str
     global_rating: float | None

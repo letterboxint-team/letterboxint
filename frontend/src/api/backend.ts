@@ -6,6 +6,7 @@ const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 export interface ApiUIMovie {
   id: number;
   title: string;
+  director: string;
   release_year?: number | null;
   poster_path?: string | null;
   global_rating?: number | null;
@@ -230,7 +231,7 @@ export function mapApiMoviesToUiMovies(
       id: apiMovie.id,
       title: apiMovie.title,
       year: apiMovie.release_year || 0,
-      director: '...', // Loaded in detail
+      director: apiMovie.director,
       poster: posterForMovie(apiMovie),
       rating: apiMovie.global_rating ?? 0, // Use global_rating from backend
       userRating: undefined,
