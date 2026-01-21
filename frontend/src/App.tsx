@@ -233,7 +233,7 @@ export default function App() {
         ) : (
           <>
             {error && (
-              <div className="bg-[#2c3440] text-yellow-200 px-4 py-3 text-center">
+              <div className="bg-[#2c3440] text-white px-4 py-3 text-center">
                 {error}
               </div>
             )}

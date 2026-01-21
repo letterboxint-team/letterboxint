@@ -203,7 +203,6 @@ def create_review(payload: dict = Body(...)):
 
         # Update global rating
         reviews = session.exec(select(Review).where(Review.movie_id == review.movie_id)).all()
-        print(reviews)
         if reviews:
              total_score = 0
              count = 0
