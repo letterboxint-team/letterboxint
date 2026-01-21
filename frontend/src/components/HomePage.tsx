@@ -8,9 +8,11 @@ interface HomePageProps {
   reviews: UiReview[];
   onMovieClick: (movieId: number) => void;
   onRefresh?: () => void;
+  watchedCount?: number;
+  personalRating?: string;
 }
 
-export function HomePage({ movies, reviews, onMovieClick, onRefresh }: HomePageProps) {
+export function HomePage({ movies, reviews, onMovieClick, onRefresh, watchedCount, personalRating }: HomePageProps) {
   useEffect(() => {
     onRefresh?.();
   }, []);
@@ -38,15 +40,16 @@ export function HomePage({ movies, reviews, onMovieClick, onRefresh }: HomePageP
     .sort((a, b) => (b.year || 0) - (a.year || 0))
     .slice(0, 6);
 
-  const watchedCount = new Set(reviews.map((review) => review.movieId)).size;
+  const displayWatchedCount = watchedCount !== undefined ? watchedCount : new Set(reviews.map((review) => review.movieId)).size;
   const reviewCount = reviews.length;
-  const averageRating =
-    movies.length > 0
+  const averageRating = personalRating !== undefined
+    ? personalRating
+    : (movies.length > 0
       ? (
         movies.reduce((sum, movie) => sum + (movie.rating || 0), 0) /
         movies.length
       ).toFixed(1)
-      : '0';
+      : '0');
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -131,7 +134,7 @@ export function HomePage({ movies, reviews, onMovieClick, onRefresh }: HomePageP
       <section className="bg-[#1a1f29] rounded-lg p-8 text-center">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <div className="text-[#00c030] text-4xl mb-2">{watchedCount}</div>
+            <div className="text-[#00c030] text-4xl mb-2">{displayWatchedCount}</div>
             <div className="text-gray-400">Films visionnés (via le backend)</div>
           </div>
           <div>
@@ -140,7 +143,7 @@ export function HomePage({ movies, reviews, onMovieClick, onRefresh }: HomePageP
           </div>
           <div>
             <div className="text-[#00c030] text-4xl mb-2">{averageRating}</div>
-            <div className="text-gray-400">Note moyenne calculée</div>
+            <div className="text-gray-400">Note moyenne donnée</div>
           </div>
         </div>
       </section>

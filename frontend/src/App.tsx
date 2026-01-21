@@ -202,6 +202,12 @@ export default function App() {
   // Actually if activeUser is set, clean up isAuthBarVisible? 
   // Let's keep it simple.
 
+  // Calculate derived user stats
+  const userReviews = activeUser ? reviews.filter(r => r.userId === activeUser.id) : [];
+  const userAvgRating = userReviews.length > 0
+    ? (userReviews.reduce((acc, r) => acc + r.averageRating, 0) / userReviews.length).toFixed(1)
+    : undefined;
+
   return (
     <div className="min-h-screen bg-[#14181c]">
       <Header
@@ -253,6 +259,8 @@ export default function App() {
                       // No need to set reviews/users here heavily if not needed, but consistency is good
                       // For homepage specifically, we want new movies.
                     }}
+                    watchedCount={activeUser ? watchedMovies.size : undefined}
+                    personalRating={userAvgRating}
                   />
                 }
               />
