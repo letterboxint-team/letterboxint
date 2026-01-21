@@ -43,6 +43,7 @@ class UIMovie(SQLModel):
     global_rating: float | None
 
 
-
-
-
+class Friendship(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    friend_id: int = Field(foreign_key="user.id")

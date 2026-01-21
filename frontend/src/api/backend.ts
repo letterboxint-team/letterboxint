@@ -122,6 +122,14 @@ export async function fetchUsers(): Promise<ApiUser[]> {
   return fetchJson<ApiUser[]>('/users');
 }
 
+export async function fetchFriends(userId: number): Promise<ApiUser[]> {
+  return fetchJson<ApiUser[]>(`/users/${userId}/friends`);
+}
+
+export async function addFriend(userId: number, friendId: number): Promise<void> {
+  return postJson<void>('/friends', { user_id: userId, friend_id: friendId });
+}
+
 export async function fetchReviews(): Promise<ApiReview[]> {
   return fetchJson<ApiReview[]>('/reviews');
 }

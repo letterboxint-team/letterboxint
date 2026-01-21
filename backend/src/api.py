@@ -9,7 +9,7 @@ from sqlmodel import SQLModel, create_engine, Session
 from models import User
 from fastapi import HTTPException, status, Body
 from sqlmodel import select
-from models import Movie, Review, UIMovie
+from models import Movie, Review, UIMovie, Friendship
 import os
 import jwt
 from fastapi.responses import JSONResponse
@@ -192,3 +192,39 @@ def reviews_by_user(user_id: int):
             )
         reviews = session.exec(select(Review).where(Review.user_id == user_id)).all()
         return reviews
+
+
+@app.post("/friends")
+def add_friend(payload: dict = Body(...)):
+    user_id = payload.get("user_id")
+    friend_id = payload.get("friend_id")
+    
+    if not user_id or not friend_id:
+        raise HTTPException(status_code=400, detail="user_id and friend_id required")
+        
+    with Session(engine) as session:
+        # Check if friendship already exists
+        existing = session.exec(select(Friendship).where(
+            Friendship.user_id == user_id, 
+            Friendship.friend_id == friend_id
+        )).first()
+        
+        if existing:
+            return {"message": "Already friends"}
+            
+        friendship = Friendship(user_id=user_id, friend_id=friend_id)
+        session.add(friendship)
+        session.commit()
+        return {"message": "Friend added"}
+
+
+@app.get("/users/{user_id}/friends")
+def list_friends(user_id: int):
+    with Session(engine) as session:
+        # Get all friend IDs
+        friendships = session.exec(select(Friendship).where(Friendship.user_id == user_id)).all()
+        friend_ids = [f.friend_id for f in friendships]
+        
+        # Get user details for these friends
+        friends = session.exec(select(User).where(User.id.in_(friend_ids))).all()
+        return friends

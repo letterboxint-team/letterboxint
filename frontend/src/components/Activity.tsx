@@ -1,17 +1,20 @@
-import { Star, Heart, Eye, List, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Star, Eye, List, Clock } from 'lucide-react';
 import { Movie } from '../data/movies';
-import { UiReview } from '../api/backend';
+import { UiReview, ApiUser, fetchFriends } from '../api/backend';
 
 interface ActivityProps {
   movies: Movie[];
   reviews: UiReview[];
   onMovieClick: (movieId: number) => void;
+  activeUser: ApiUser | null;
 }
 
 type ActivityItem = {
   id: number;
   type: 'review' | 'watched' | 'rating' | 'list';
   user: {
+    id: number;
     name: string;
     avatar: string;
   };
@@ -30,7 +33,18 @@ function formatDate(dateString: string) {
   return date.toLocaleDateString();
 }
 
-export function Activity({ movies, reviews, onMovieClick }: ActivityProps) {
+export function Activity({ movies, reviews, onMovieClick, activeUser }: ActivityProps) {
+  const [filter, setFilter] = useState<'all' | 'friends'>('all');
+  const [friends, setFriends] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (activeUser) {
+      fetchFriends(activeUser.id).then((users) => {
+        setFriends(users.map(u => u.id));
+      });
+    }
+  }, [activeUser]);
+
   const moviesById = new Map(movies.map((movie) => [movie.id, movie]));
 
   const reviewActivities: ActivityItem[] = reviews
@@ -43,7 +57,7 @@ export function Activity({ movies, reviews, onMovieClick }: ActivityProps) {
       return {
         id: review.id,
         type: 'review' as const,
-        user: { name: review.username, avatar },
+        user: { id: review.userId, name: review.username, avatar }, // review.userId matches user.id
         movie,
         rating: review.averageRating,
         breakdown: review.breakdown,
@@ -53,7 +67,13 @@ export function Activity({ movies, reviews, onMovieClick }: ActivityProps) {
     })
     .filter(Boolean) as ActivityItem[];
 
-  const activities = reviewActivities;
+  const activities = reviewActivities.filter(activity => {
+    if (filter === 'friends') {
+      if (!activeUser) return false;
+      return friends.includes(activity.user.id);
+    }
+    return true;
+  });
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -95,13 +115,18 @@ export function Activity({ movies, reviews, onMovieClick }: ActivityProps) {
 
       {/* Filter Tabs */}
       <div className="flex gap-4 mb-8 border-b border-[#2c3440]">
-        <button className="pb-4 text-white border-b-2 border-[#00c030]">
+        <button
+          onClick={() => setFilter('all')}
+          className={`pb-4 transition-colors ${filter === 'all' ? 'text-white border-b-2 border-[#00c030]' : 'text-gray-400 hover:text-white'}`}
+        >
           Tous
         </button>
-        <button className="pb-4 text-gray-400 hover:text-white transition-colors">
+        <button
+          onClick={() => setFilter('friends')}
+          className={`pb-4 transition-colors ${filter === 'friends' ? 'text-white border-b-2 border-[#00c030]' : 'text-gray-400 hover:text-white'}`}
+        >
           Amis
         </button>
-
       </div>
 
       {/* Activity Feed */}
@@ -208,7 +233,11 @@ export function Activity({ movies, reviews, onMovieClick }: ActivityProps) {
 
         {activities.length === 0 && (
           <div className="text-center text-gray-400 py-12">
-            Aucune activité disponible. Ajoutez des critiques via le backend pour remplir ce flux.
+            {filter === 'friends' && !activeUser
+              ? "Connectez-vous pour voir l'activité de vos amis."
+              : filter === 'friends' && friends.length === 0
+                ? "Vous n'avez pas encore d'amis. Les critiques de vos amis apparaîtront ici."
+                : "Aucune activité disponible."}
           </div>
         )}
       </div>

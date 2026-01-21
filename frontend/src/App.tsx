@@ -247,6 +247,7 @@ export default function App() {
                     movies={movies}
                     reviews={reviews}
                     onMovieClick={(id) => navigate(`/movie/${id}`)}
+                    activeUser={activeUser}
                   />
                 }
               />
