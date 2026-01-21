@@ -68,8 +68,16 @@ def update_user(user_id: int, payload: dict = Body(...)):
 @app.get("/users")
 def list_users():
     with Session(engine) as session:
-        users = session.exec(select(User)).all()
-        return users
+        statement = select(User.id, User.username, User.created_at, User.profile_picture)
+        users = session.exec(statement).all()
+        # Convert rows to dicts
+        return [
+            {
+                "id": u.id, 
+                "username": u.username
+            } 
+            for u in users
+        ]
 
 
 from datetime import date
