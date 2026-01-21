@@ -179,7 +179,7 @@ export function MovieDetail({
                   <div className="text-gray-400 text-sm mb-1">Note moyenne (backend)</div>
                   <div className="flex items-center gap-2">
                     <Star className="text-[#00c030] fill-[#00c030]" size={24} />
-                    <span className="text-white text-2xl">{movieDetail.rating}</span>
+                    <span className="text-white text-2xl">{movieDetail.rating?.toFixed(1)}</span>
                     <span className="text-gray-400">/5</span>
                   </div>
                 </div>
@@ -317,20 +317,22 @@ export function MovieDetail({
         </section >
 
         {/* Similar movies */}
-        {similarMovies.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-white text-2xl mb-4">Films similaires</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {similarMovies.map((similar) => (
-                <MovieCard
-                  key={similar.id}
-                  movie={similar}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
-    </div>
+        {
+          similarMovies.length > 0 && (
+            <section className="mb-12">
+              <h2 className="text-white text-2xl mb-4">Films similaires</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {similarMovies.map((similar) => (
+                  <MovieCard
+                    key={similar.id}
+                    movie={similar}
+                  />
+                ))}
+              </div>
+            </section>
+          )
+        }
+      </div >
+    </div >
   );
 }
