@@ -4,6 +4,7 @@ try:
 except Exception:
     pass
 
+from datetime import date
 from fastapi import FastAPI
 from sqlmodel import SQLModel, create_engine, Session
 from models import User
@@ -78,9 +79,6 @@ def list_users():
             } 
             for u in users
         ]
-
-
-from datetime import date
 
 
 @app.post("/signup", status_code=status.HTTP_201_CREATED)

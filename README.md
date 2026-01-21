@@ -40,6 +40,7 @@ Data Layer: Persistent storage for user data and movie metadata.
 - MySQL
 - Python fastapi backend
 - React
+- Three.js
 
 ## Data flow
 
@@ -51,11 +52,34 @@ Data Layer: Persistent storage for user data and movie metadata.
 
 ## API Endpoints
 
-- `GET /api/movie` to get infos about a movie
-- `POST /api/movie` to update infos of a movie in the DB
-- `GET /api/user` to get a user's main info
-- `GET /api/watchlist` to get a watchlist
-- `GET /api/review` to get a review
+### Users & Auth
+- `POST /signup`: Register a new user
+- `POST /login`: Authenticate a user
+- `POST /logout`: Log out
+- `GET /users`: List all users
+- `GET /users/{user_id}`: Get user details
+- `PATCH /users/{user_id}`: Update user details
+
+### Movies
+- `GET /movies`: List all movies
+- `GET /movies/{movie_id}`: Get movie details
+- `GET /movies/search/`: Search movies by title
+
+### Reviews
+- `GET /reviews`: List all reviews
+- `POST /reviews`: Create a new review
+- `GET /reviews/{movie_id}`: Get reviews for a specific movie
+- `GET /users/{user_id}/reviews`: Get reviews by a specific user
+
+### Social & Interactions
+- `POST /friends`: Add a friend
+- `GET /users/{user_id}/friends`: List a user's friends
+- `GET /users/{user_id}/watched`: Get user's watched history
+- `POST /users/{user_id}/watched`: Mark a movie as watched
+- `DELETE /users/{user_id}/watched/{movie_id}`: Remove a movie from watched history
+- `GET /users/{user_id}/favorites`: Get user's favorite movies
+- `POST /users/{user_id}/favorites`: Add a movie to favorites
+- `DELETE /users/{user_id}/favorites/{movie_id}`: Remove a movie from favorites
 
 # Meet the team
 
