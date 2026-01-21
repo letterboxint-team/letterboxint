@@ -178,9 +178,15 @@ export function MovieDetail({
                 <div>
                   <div className="text-gray-400 text-sm mb-1">Note moyenne (backend)</div>
                   <div className="flex items-center gap-2">
-                    <Star className="text-[#00c030] fill-[#00c030]" size={24} />
-                    <span className="text-white text-2xl">{movieDetail.rating?.toFixed(1)}</span>
-                    <span className="text-gray-400">/5</span>
+                    {(movieDetail.rating || 0) > 0 ? (
+                      <>
+                        <Star className="text-[#00c030] fill-[#00c030]" size={24} />
+                        <span className="text-white text-2xl">{movieDetail.rating?.toFixed(1)}</span>
+                        <span className="text-gray-400">/5</span>
+                      </>
+                    ) : (
+                      <span className="text-white text-xl italic">Not yet reviewed</span>
+                    )}
                   </div>
                 </div>
 
