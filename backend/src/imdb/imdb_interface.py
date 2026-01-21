@@ -15,7 +15,7 @@ except KeyError:
 tmdb.API_KEY = API_KEY
 
 
-engine = create_engine("sqlite:///database.db")
+engine = create_engine("sqlite:///data/database.db")
 
 
 def add_movie(movie_id: int):

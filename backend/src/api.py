@@ -16,6 +16,7 @@ import jwt
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from imdb.imdb_interface import add_movie, search_movie_by_title, MovieSearchResult
+from pathlib import Path
 
 origins = ["*"]
 app = FastAPI()
@@ -26,7 +27,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-engine = create_engine("sqlite:///database.db")
+
+if not Path("data").exists():
+    Path("data").mkdir()
+
+engine = create_engine("sqlite:///data/database.db")
 SQLModel.metadata.create_all(engine)
 secret_key = os.getenv("SECRET_KEY", "EDIT_THE_DOT_ENV_IN_PRODUCTION_OR_GET_FIRED")
 
