@@ -221,7 +221,10 @@ export function MovieDetail({
                           key={star}
                           onMouseEnter={() => setHoveredStar(star)}
                           onMouseLeave={() => setHoveredStar(0)}
-                          onClick={() => setUserRating(star)}
+                          onClick={() => {
+                            setUserRating(star);
+                            setIsReviewModalOpen(true);
+                          }}
                         >
                           <Star
                             size={20}

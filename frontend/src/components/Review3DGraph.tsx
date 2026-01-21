@@ -94,11 +94,11 @@ export function Review3DGraph({ reviews }: Review3DGraphProps) {
 
     return (
         <div style={{ width: 250, height: 250 }} className="bg-[#1a1f29] rounded-lg border border-gray-800 relative z-0">
-            <Canvas camera={{ position: [4, 4, 4], fov: 50 }}>
-                <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} />
+            <Canvas camera={{ position: [2, 2, 2], fov: 50 }}>
+                {/* <ambientLight intensity={0.5} />
+                <pointLight position={[10, 10, 10]} /> */}
 
-                <OrbitControls enableZoom={true} enablePan={true} autoRotate autoRotateSpeed={0.5} />
+                <OrbitControls enableZoom={true} enablePan={true} />
 
                 <group>
                     {/* Grid helpers for visual context */}
