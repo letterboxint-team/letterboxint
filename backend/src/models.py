@@ -19,7 +19,6 @@ class Review(SQLModel, table=True):
     note_action: int
     note_scenario: int
     date_reviewed: date = Field(default_factory=date.today)
-    favorite: bool = Field(default=False)
     comment: Optional[str] = Field(default=None)
 
 
@@ -48,3 +47,16 @@ class Friendship(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     friend_id: int = Field(foreign_key="user.id")
+
+
+class WatchedMovie(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    movie_id: int
+    date_watched: date = Field(default_factory=date.today)
+
+
+class FavoriteMovie(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    movie_id: int

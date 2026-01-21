@@ -44,10 +44,7 @@ export function Lists({ movies, onMovieClick }: ListsProps) {
           <p className="text-gray-400">Les listes sont générées à partir des films remontés par le backend</p>
         </div>
 
-        <button className="flex items-center gap-2 px-6 py-3 bg-[#00c030] text-white rounded-md hover:bg-[#00d436] transition-colors">
-          <Plus size={20} />
-          Nouvelle liste
-        </button>
+
       </div>
 
       {/* Lists */}

@@ -9,7 +9,7 @@ from sqlmodel import SQLModel, create_engine, Session
 from models import User
 from fastapi import HTTPException, status, Body
 from sqlmodel import select
-from models import Movie, Review, UIMovie, Friendship
+from models import Movie, Review, UIMovie, Friendship, WatchedMovie, FavoriteMovie
 import os
 import jwt
 from fastapi.responses import JSONResponse
@@ -155,24 +155,49 @@ def read_movie(movie_id: int):
 
 
 @app.post("/reviews", status_code=status.HTTP_201_CREATED)
-def create_review(review: Review):
+def create_review(payload: dict = Body(...)):
+    # Payload manual extraction because 'favorite' is not in model anymore
+    # but frontend sends it.
+    
+    review_data = {k: v for k, v in payload.items() if k != "favorite"}
+    is_favorite = payload.get("favorite", False)
+    
+    review = Review(**review_data)
+
     with Session(engine) as session:
         # Optionally validate referenced user/movie exist
         if review.user_id is not None:
             user = session.get(User, review.user_id)
             if not user:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid user_id",
-                )
+                raise HTTPException(status_code=400, detail="Invalid user_id")
         if review.movie_id is not None:
             movie = session.get(Movie, review.movie_id)
             if not movie:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid movie_id",
-                )
+                raise HTTPException(status_code=400, detail="Invalid movie_id")
+                
         session.add(review)
+        
+        # AUTO-WATCHED LOGIC
+        # Check if already watched
+        watched = session.exec(select(WatchedMovie).where(
+            WatchedMovie.user_id == review.user_id,
+            WatchedMovie.movie_id == review.movie_id
+        )).first()
+        
+        if not watched:
+            new_watched = WatchedMovie(user_id=review.user_id, movie_id=review.movie_id)
+            session.add(new_watched)
+            
+        # FAVORITE LOGIC
+        if is_favorite:
+             fav = session.exec(select(FavoriteMovie).where(
+                FavoriteMovie.user_id == review.user_id,
+                FavoriteMovie.movie_id == review.movie_id
+             )).first()
+             if not fav:
+                 new_fav = FavoriteMovie(user_id=review.user_id, movie_id=review.movie_id)
+                 session.add(new_fav)
+        
         session.commit()
         session.refresh(review)
 
@@ -180,12 +205,6 @@ def create_review(review: Review):
         reviews = session.exec(select(Review).where(Review.movie_id == review.movie_id)).all()
         print(reviews)
         if reviews:
-             # Average of visual, action, scenario notes for all reviews? 
-             # Or just average of averages? 
-             # User didn't specify, I will take the average of (avg of 3 notes) for each review.
-             # Actually, simpler: just average of all notes effectively.
-             # Let's say a review rating is average of its 3 notes.
-
              total_score = 0
              count = 0
              for r in reviews:
@@ -268,7 +287,7 @@ def list_friends(user_id: int):
             or_(Friendship.user_id == user_id, Friendship.friend_id == user_id)
         )).all()
         
-        # Extract the ID of the *other* person
+        # Get friend IDs
         friend_ids = []
         for f in friendships:
             if f.user_id == user_id:
@@ -277,5 +296,96 @@ def list_friends(user_id: int):
                 friend_ids.append(f.user_id)
         
         # Get user details for these friends
+        if not friend_ids:
+            return []
+            
         friends = session.exec(select(User).where(User.id.in_(friend_ids))).all()
         return friends
+
+
+# --- WATCHED & FAVORITES ---
+
+@app.post("/users/{user_id}/watched")
+def mark_movie_watched(user_id: int, payload: dict = Body(...)):
+    movie_id = payload.get("movie_id")
+    if not movie_id:
+        raise HTTPException(status_code=400, detail="movie_id required")
+        
+    with Session(engine) as session:
+        existing = session.exec(select(WatchedMovie).where(
+            WatchedMovie.user_id == user_id,
+            WatchedMovie.movie_id == movie_id
+        )).first()
+        
+        if existing:
+            return {"message": "Already watched"}
+            
+        watched = WatchedMovie(user_id=user_id, movie_id=movie_id)
+        session.add(watched)
+        session.commit()
+        return {"message": "Marked as watched"}
+
+
+@app.delete("/users/{user_id}/watched/{movie_id}")
+def unmark_movie_watched(user_id: int, movie_id: int):
+    with Session(engine) as session:
+        watched = session.exec(select(WatchedMovie).where(
+            WatchedMovie.user_id == user_id,
+            WatchedMovie.movie_id == movie_id
+        )).first()
+        
+        if watched:
+            session.delete(watched)
+            session.commit()
+            return {"message": "Removed from watched"}
+        return {"message": "Not found"}
+
+
+@app.get("/users/{user_id}/watched")
+def get_watched_movies(user_id: int):
+    with Session(engine) as session:
+        watched = session.exec(select(WatchedMovie).where(WatchedMovie.user_id == user_id)).all()
+        return watched
+
+
+@app.post("/users/{user_id}/favorites")
+def mark_movie_favorite(user_id: int, payload: dict = Body(...)):
+    movie_id = payload.get("movie_id")
+    if not movie_id:
+        raise HTTPException(status_code=400, detail="movie_id required")
+        
+    with Session(engine) as session:
+        existing = session.exec(select(FavoriteMovie).where(
+            FavoriteMovie.user_id == user_id,
+            FavoriteMovie.movie_id == movie_id
+        )).first()
+        
+        if existing:
+            return {"message": "Already favorite"}
+            
+        favorite = FavoriteMovie(user_id=user_id, movie_id=movie_id)
+        session.add(favorite)
+        session.commit()
+        return {"message": "Added to favorites"}
+
+
+@app.delete("/users/{user_id}/favorites/{movie_id}")
+def unmark_movie_favorite(user_id: int, movie_id: int):
+    with Session(engine) as session:
+        favorite = session.exec(select(FavoriteMovie).where(
+            FavoriteMovie.user_id == user_id,
+            FavoriteMovie.movie_id == movie_id
+        )).first()
+        
+        if favorite:
+            session.delete(favorite)
+            session.commit()
+            return {"message": "Removed from favorites"}
+        return {"message": "Not found"}
+
+
+@app.get("/users/{user_id}/favorites")
+def get_favorite_movies(user_id: int):
+    with Session(engine) as session:
+        favorites = session.exec(select(FavoriteMovie).where(FavoriteMovie.user_id == user_id)).all()
+        return favorites

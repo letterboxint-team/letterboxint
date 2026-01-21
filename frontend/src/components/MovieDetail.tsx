@@ -22,6 +22,10 @@ interface MovieDetailProps {
   }) => void;
   onMovieClick: (movieId: number) => void;
   onRequestLogin?: () => void;
+  watchedMovies?: Set<number>;
+  favoriteMovies?: Set<number>;
+  onToggleWatched?: (movieId: number) => void;
+  onToggleFavorite?: (movieId: number) => void;
 }
 
 export function MovieDetail({
@@ -31,6 +35,10 @@ export function MovieDetail({
   onCreateReview,
   onMovieClick,
   onRequestLogin,
+  watchedMovies,
+  favoriteMovies,
+  onToggleWatched,
+  onToggleFavorite,
 }: MovieDetailProps) {
   const { movieId } = useParams();
 
@@ -50,16 +58,15 @@ export function MovieDetail({
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   useEffect(() => {
+    // ... logic for fetching movie details ...
     const id = Number(movieId);
     if (!id) return;
 
     setLoading(true);
     fetchMovie(id)
       .then((detail) => {
-        // Map ApiMovieDetail back to internal Movie interface
-        console.log("Movie Details from API:", detail);
-        console.log("Movie Reviews from API:", movieReviews);
-        const mapped: Movie = {
+        // ... (existing mapping logic) ...
+        const mapped: Movie = { // Copied mapping logic for brevity, see original
           id: detail.id,
           title: detail.title,
           year: detail.release_year || 0,
@@ -67,11 +74,11 @@ export function MovieDetail({
           poster: detail.poster_path ? (detail.poster_path.startsWith('http') ? detail.poster_path : `https://image.tmdb.org/t/p/w500${detail.poster_path}`) : '',
           rating: detail.global_rating || 0,
           userRating: undefined,
-          watched: false, // We'll update this from local check or props
+          watched: false,
           genre: parseGenres(detail.genre),
           runtime: detail.runtime || 0,
           synopsis: detail.synopsis || '',
-          cast: [], // Api doesn't return cast yet
+          cast: [],
           userReview: undefined,
         };
         setMovieDetail(mapped);
@@ -87,13 +94,25 @@ export function MovieDetail({
 
   useEffect(() => {
     if (movieDetail) {
-      // Update user interactions state
+      const id = movieDetail.id;
+      // Derived from global sets if available
+      if (watchedMovies) {
+        setIsWatched(watchedMovies.has(id));
+      } else {
+        // Fallback to legacy check or default false
+        setIsWatched(false);
+      }
+
+      if (favoriteMovies) {
+        setIsLiked(favoriteMovies.has(id));
+      } else {
+        setIsLiked(false);
+      }
+
       const movieInList = movies.find(m => m.id === movieDetail.id);
       setUserRating(movieInList?.userRating || 0);
-      setIsWatched(movieInList?.watched || movieReviews.length > 0);
-      setIsLiked(movieReviews.some((review) => review.favorite));
     }
-  }, [movieDetail, movieReviews, movies]);
+  }, [movieDetail, watchedMovies, favoriteMovies, movies]);
 
 
   if (error) {
@@ -223,7 +242,7 @@ export function MovieDetail({
                 {canReview ? (
                   <>
                     <button
-                      onClick={() => setIsWatched(!isWatched)}
+                      onClick={() => onToggleWatched?.(movie.id)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${isWatched
                         ? 'bg-[#00c030] text-white'
                         : 'bg-[#1a1f29] text-gray-300 hover:bg-[#2c3440]'
@@ -234,7 +253,7 @@ export function MovieDetail({
                     </button>
 
                     <button
-                      onClick={() => setIsLiked(!isLiked)}
+                      onClick={() => onToggleFavorite?.(movie.id)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${isLiked
                         ? 'bg-[#ff6b6b] text-white'
                         : 'bg-[#1a1f29] text-gray-300 hover:bg-[#2c3440]'
@@ -244,10 +263,7 @@ export function MovieDetail({
                       J'aime
                     </button>
 
-                    <button className="flex items-center gap-2 px-4 py-2 bg-[#1a1f29] text-gray-300 rounded-md hover:bg-[#2c3440] transition-colors">
-                      <Plus size={18} />
-                      Ajouter à une liste
-                    </button>
+
 
                     <button
                       onClick={() => setIsReviewModalOpen(true)}

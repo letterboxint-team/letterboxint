@@ -65,6 +65,19 @@ export interface ReviewStats {
   lastDate?: string;
 }
 
+export interface ApiWatchedMovie {
+  id: number;
+  user_id: number;
+  movie_id: number;
+  date_watched: string;
+}
+
+export interface ApiFavoriteMovie {
+  id: number;
+  user_id: number;
+  movie_id: number;
+}
+
 export interface UiReview {
   id: number;
   userId: number;
@@ -144,6 +157,42 @@ export async function fetchFriends(userId: number): Promise<ApiUser[]> {
 
 export async function addFriend(userId: number, friendId: number): Promise<void> {
   return postJson<void>('/friends', { user_id: userId, friend_id: friendId });
+}
+
+// Watched & Favorites
+export async function fetchWatchedMovies(userId: number): Promise<ApiWatchedMovie[]> {
+  return fetchJson<ApiWatchedMovie[]>(`/users/${userId}/watched`);
+}
+
+export async function markAsWatched(userId: number, movieId: number): Promise<void> {
+  return postJson<void>(`/users/${userId}/watched`, { movie_id: movieId });
+}
+
+export async function unmarkAsWatched(userId: number, movieId: number): Promise<void> {
+  // DELETE request helper not strictly available, defaulting to standard fetch for DELETE
+  const response = await fetch(`${API_BASE_URL}/users/${userId}/watched/${movieId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error(`Erreur API ${response.status}`);
+  }
+}
+
+export async function fetchFavoriteMovies(userId: number): Promise<ApiFavoriteMovie[]> {
+  return fetchJson<ApiFavoriteMovie[]>(`/users/${userId}/favorites`);
+}
+
+export async function markAsFavorite(userId: number, movieId: number): Promise<void> {
+  return postJson<void>(`/users/${userId}/favorites`, { movie_id: movieId });
+}
+
+export async function unmarkAsFavorite(userId: number, movieId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/users/${userId}/favorites/${movieId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error(`Erreur API ${response.status}`);
+  }
 }
 
 export async function fetchReviews(): Promise<ApiReview[]> {

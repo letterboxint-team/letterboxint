@@ -19,59 +19,89 @@ import {
   mapApiMoviesToUiMovies,
   mapApiReviewsToUiReviews,
   signup,
+  fetchWatchedMovies,
+  fetchFavoriteMovies,
+  markAsWatched,
+  unmarkAsWatched,
+  markAsFavorite,
+  unmarkAsFavorite,
 } from './api/backend';
 import AuthBar from './components/AuthBar';
 import { Movie } from './data/movies';
 import { Routes, Route, useNavigate } from "react-router-dom";
 
 
+// Helper for cookies
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
 // type Page = 'home' | 'movie' | 'profile' | 'lists' | 'activity';
 
 export default function App() {
-  // const [currentPage, setCurrentPage] = useState<Page>('home');
-  // const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [reviews, setReviews] = useState<UiReview[]>([]);
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [authToken, setAuthToken] = useState<string | null>(() =>
-    localStorage.getItem('lb_token')
-  );
-  const [activeUserId, setActiveUserId] = useState<number | null>(() => {
-    const stored = localStorage.getItem('lb_user_id');
-    return stored ? Number(stored) : null;
-  });
-  const activeUser = users.find((u) => u.id === activeUserId) || null;
+
+  // User specific data
+  const [activeUser, setActiveUser] = useState<ApiUser | null>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [watchedMovies, setWatchedMovies] = useState<Set<number>>(new Set());
+  const [favoriteMovies, setFavoriteMovies] = useState<Set<number>>(new Set());
+
+  // Fetch user specific data
+  const fetchUserData = async (userId: number) => {
+    try {
+      const [watched, favorites] = await Promise.all([
+        fetchWatchedMovies(userId),
+        fetchFavoriteMovies(userId)
+      ]);
+      setWatchedMovies(new Set(watched.map(w => w.movie_id)));
+      setFavoriteMovies(new Set(favorites.map(f => f.movie_id)));
+    } catch (e) {
+      console.error("Failed to fetch user data", e);
+    }
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [apiMovies, apiReviews, apiUsers] = await Promise.all([
-          fetchMovies(),
-          fetchReviews(),
-          fetchUsers(),
-        ]);
+    // Initial data load
+    Promise.all([fetchMovies(), fetchReviews(), fetchUsers()])
+      .then(([apiMovies, apiReviews, apiUsers]) => {
         const reviewStats = getReviewStatsByMovie(apiReviews);
-        const uiMovies = mapApiMoviesToUiMovies(apiMovies, reviewStats);
-        const uiReviews = mapApiReviewsToUiReviews(apiReviews, apiUsers, uiMovies);
-
-        setMovies(uiMovies);
-        setReviews(uiReviews);
+        // We initially map without knowing watched status (or empty)
+        // logic downstream in mapApiMoviesToUiMovies will use reviewed stats for "watched"
+        // We will override this later or update mapApiMoviesToUiMovies
+        setMovies(mapApiMoviesToUiMovies(apiMovies, reviewStats));
+        setReviews(mapApiReviewsToUiReviews(apiReviews, apiUsers, mapApiMoviesToUiMovies(apiMovies, reviewStats)));
         setUsers(apiUsers);
-        setError(null);
-      } catch (err) {
-        console.error('Erreur lors du chargement du backend', err);
-        setError("Impossible de joindre le backend pour le moment. Aucune donnée affichée.");
-        setMovies([]);
-        setReviews([]);
-        setUsers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      })
+      .catch((err) => {
+        console.error(err);
+        setError('Impossible de charger les données. Vérifiez que le backend FastAPI est lancé.');
+      })
+      .finally(() => setLoading(false));
 
-    loadData();
+    // Restore session
+    const token = getCookie('access_token');
+    const storedUser = localStorage.getItem('letterboxint_user');
+    if (token && storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setAuthToken(token);
+        setActiveUser(user);
+        fetchUserData(user.id);
+      } catch (e) {
+        console.error("Failed to parse stored user data", e);
+        // Clear invalid stored data
+        localStorage.removeItem('letterboxint_user');
+        // document.cookie = 'access_token=; Max-Age=0; path=/'; // Clear cookie if needed
+      }
+    }
   }, []);
 
   // const navigateToMovie = (movieId: number) => {
@@ -107,12 +137,10 @@ export default function App() {
       if (mode === 'signup') {
         const newUser = await signup(username, password);
         setUsers((prev) => [...prev, newUser]);
-        setActiveUserId(newUser.id);
-        localStorage.setItem('lb_user_id', String(newUser.id));
       }
       const loginResponse = await login(username, password);
       setAuthToken(loginResponse.access_token);
-      localStorage.setItem('lb_token', loginResponse.access_token);
+      document.cookie = `access_token=${loginResponse.access_token}; path=/; max-age=86400`;
 
       // Refresh users to be sure we have the user we just created
       const refreshedUsers = await fetchUsers();
@@ -120,30 +148,39 @@ export default function App() {
       const matchedUser =
         refreshedUsers.find((u) => u.username === username) || refreshedUsers[0] || null;
       if (matchedUser) {
-        setActiveUserId(matchedUser.id);
-        localStorage.setItem('lb_user_id', String(matchedUser.id));
+        setActiveUser(matchedUser);
+        localStorage.setItem('letterboxint_user', JSON.stringify(matchedUser));
+
+        setAuthBarVisible(false); // Hide auth bar on success
+        // Fetch user data
+        fetchUserData(matchedUser.id);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Auth error', err);
       setError("Connexion/inscription impossible. Vérifiez vos identifiants ou le backend.");
     }
   };
 
   const handleLogout = () => {
+    setActiveUser(null);
     setAuthToken(null);
-    setActiveUserId(null);
-    localStorage.removeItem('lb_token');
-    localStorage.removeItem('lb_user_id');
+    setWatchedMovies(new Set());
+    setFavoriteMovies(new Set());
+    document.cookie = 'access_token=; Max-Age=0; path=/;';
+    localStorage.removeItem('letterboxint_user');
   };
 
   const handleCreateReview = async (payload: Omit<CreateReviewPayload, 'user_id'>) => {
-    if (!activeUserId) {
+    if (!activeUser) {
       setError("Vous devez être connecté pour publier une critique.");
       return;
     }
     try {
-      const apiReview = await createReview(
-        { ...payload, user_id: activeUserId },
+      await createReview(
+        {
+          ...payload,
+          user_id: activeUser.id,
+        },
         authToken || undefined
       );
       const updatedReviews = await fetchReviews();
@@ -227,11 +264,45 @@ export default function App() {
                     movies={movies}
                     reviews={reviews}
                     canReview={Boolean(activeUser)}
-                    onCreateReview={handleCreateReview}
+                    onCreateReview={async (payload) => {
+                      await handleCreateReview(payload);
+                      // Refresh user data because review might trigger auto-watch/favorite
+                      if (activeUser) fetchUserData(activeUser.id);
+                    }}
                     onMovieClick={(id) => navigate(`/movie/${id}`)}
                     onRequestLogin={() => {
                       setAuthBarVisible(true);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    watchedMovies={watchedMovies}
+                    favoriteMovies={favoriteMovies}
+                    onToggleWatched={async (movieId) => {
+                      if (!activeUser) return;
+                      if (watchedMovies.has(movieId)) {
+                        await unmarkAsWatched(activeUser.id, movieId);
+                        setWatchedMovies(prev => {
+                          const next = new Set(prev);
+                          next.delete(movieId);
+                          return next;
+                        });
+                      } else {
+                        await markAsWatched(activeUser.id, movieId);
+                        setWatchedMovies(prev => new Set(prev).add(movieId));
+                      }
+                    }}
+                    onToggleFavorite={async (movieId) => {
+                      if (!activeUser) return;
+                      if (favoriteMovies.has(movieId)) {
+                        await unmarkAsFavorite(activeUser.id, movieId);
+                        setFavoriteMovies(prev => {
+                          const next = new Set(prev);
+                          next.delete(movieId);
+                          return next;
+                        });
+                      } else {
+                        await markAsFavorite(activeUser.id, movieId);
+                        setFavoriteMovies(prev => new Set(prev).add(movieId));
+                      }
                     }}
                   />
                 }
