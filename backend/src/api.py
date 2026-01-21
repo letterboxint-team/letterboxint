@@ -39,6 +39,29 @@ def read_root():
 def read_user(user_id: int):
     with Session(engine) as session:
         user = session.get(User, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+
+
+@app.patch("/users/{user_id}")
+def update_user(user_id: int, payload: dict = Body(...)):
+    with Session(engine) as session:
+        user = session.get(User, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        username = payload.get("username")
+        if username:
+            # Check uniqueness
+            existing = session.exec(select(User).where(User.username == username)).first()
+            if existing and existing.id != user_id:
+                raise HTTPException(status_code=400, detail="Username already exists")
+            user.username = username
+        
+        session.add(user)
+        session.commit()
+        session.refresh(user)
         return user
 
 

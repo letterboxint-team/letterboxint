@@ -109,6 +109,21 @@ async function postJson<T>(path: string, data: unknown): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function patchJson<T>(path: string, data: unknown): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erreur API ${response.status}: ${response.statusText}`);
+  }
+  return response.json() as Promise<T>;
+}
+
 
 export async function fetchMovies(): Promise<ApiUIMovie[]> {
   return fetchJson<ApiUIMovie[]>('/movies');
@@ -139,6 +154,10 @@ export async function signup(username: string, password: string): Promise<ApiUse
     username,
     password_hash: password,
   });
+}
+
+export async function updateUser(userId: number, payload: { username?: string }): Promise<ApiUser> {
+  return patchJson<ApiUser>(`/users/${userId}`, payload);
 }
 
 export async function login(username: string, password: string): Promise<LoginResponse> {

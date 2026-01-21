@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Star, Eye, Heart, Calendar } from 'lucide-react';
 import { Movie } from '../data/movies';
-import { ApiUser, UiReview } from '../api/backend';
+import { ApiUser, UiReview, updateUser } from '../api/backend';
 import { MovieCard } from './MovieCard';
 
 interface UserProfileProps {
@@ -13,6 +13,9 @@ interface UserProfileProps {
 
 export function UserProfile({ movies, reviews, activeUser, onMovieClick }: UserProfileProps) {
   const [activeTab, setActiveTab] = useState<'watched' | 'rated' | 'reviews'>('watched');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editUsername, setEditUsername] = useState('');
+  const [error, setError] = useState<string | null>(null);
   if (!activeUser) {
     return (
       <div className="container mx-auto px-4 py-12 text-center text-gray-400">
@@ -46,7 +49,20 @@ export function UserProfile({ movies, reviews, activeUser, onMovieClick }: UserP
           </div>
 
           <div className="flex-1">
-            <h1 className="text-white text-3xl mb-2">{activeUser.username}</h1>
+            {isEditing ? (
+              <div className="mb-2">
+                <input
+                  type="text"
+                  value={editUsername}
+                  onChange={(e) => setEditUsername(e.target.value)}
+                  className="bg-[#2c3440] text-white text-3xl px-2 py-1 rounded w-full max-w-sm border border-[#455265] focus:border-[#00c030] focus:outline-none"
+                  autoFocus
+                />
+                {error && <p className="text-[#ff6b6b] text-sm mt-1">{error}</p>}
+              </div>
+            ) : (
+              <h1 className="text-white text-3xl mb-2">{activeUser.username}</h1>
+            )}
             <p className="text-gray-400 mb-4">
               Données issues du backend
             </p>
@@ -88,9 +104,45 @@ export function UserProfile({ movies, reviews, activeUser, onMovieClick }: UserP
             </div>
           </div>
 
-          <button className="px-6 py-2 bg-[#00c030] text-white rounded-md hover:bg-[#00d436] transition-colors">
-            Modifier le profil
-          </button>
+          {isEditing ? (
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  try {
+                    setError(null);
+                    await updateUser(activeUser.id, { username: editUsername });
+                    // Reload page to reflect changes since we don't have global state management to update the user everywhere effortlessly
+                    window.location.reload();
+                    setIsEditing(false);
+                  } catch (e) {
+                    setError('Erreur lors de la mise à jour (nom déjà pris ?)');
+                  }
+                }}
+                className="px-6 py-2 bg-[#00c030] text-white rounded-md hover:bg-[#00d436] transition-colors"
+              >
+                Sauvegarder
+              </button>
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  setError(null);
+                }}
+                className="px-6 py-2 bg-[#445566] text-white rounded-md hover:bg-[#556677] transition-colors"
+              >
+                Annuler
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setEditUsername(activeUser.username);
+                setIsEditing(true);
+              }}
+              className="px-6 py-2 bg-[#00c030] text-white rounded-md hover:bg-[#00d436] transition-colors"
+            >
+              Modifier le profil
+            </button>
+          )}
         </div>
       </div>
 
@@ -99,9 +151,8 @@ export function UserProfile({ movies, reviews, activeUser, onMovieClick }: UserP
         <div className="flex gap-8">
           <button
             onClick={() => setActiveTab('watched')}
-            className={`pb-4 relative ${
-              activeTab === 'watched' ? 'text-white' : 'text-gray-400 hover:text-white'
-            }`}
+            className={`pb-4 relative ${activeTab === 'watched' ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}
           >
             Films vus ({watchedMovies.length})
             {activeTab === 'watched' && (
@@ -111,9 +162,8 @@ export function UserProfile({ movies, reviews, activeUser, onMovieClick }: UserP
 
           <button
             onClick={() => setActiveTab('rated')}
-            className={`pb-4 relative ${
-              activeTab === 'rated' ? 'text-white' : 'text-gray-400 hover:text-white'
-            }`}
+            className={`pb-4 relative ${activeTab === 'rated' ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}
           >
             Films notés ({ratedMovies.length})
             {activeTab === 'rated' && (
@@ -123,9 +173,8 @@ export function UserProfile({ movies, reviews, activeUser, onMovieClick }: UserP
 
           <button
             onClick={() => setActiveTab('reviews')}
-            className={`pb-4 relative ${
-              activeTab === 'reviews' ? 'text-white' : 'text-gray-400 hover:text-white'
-            }`}
+            className={`pb-4 relative ${activeTab === 'reviews' ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}
           >
             Critiques ({userReviews.length})
             {activeTab === 'reviews' && (
