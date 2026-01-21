@@ -5,6 +5,7 @@ import { UiReview, fetchMovie, parseGenres } from '../api/backend';
 import { MovieCard } from './MovieCard';
 import { ReviewCard } from './ReviewCard';
 import { ReviewModal } from './ReviewModal';
+import { Review3DGraph } from './Review3DGraph';
 import { useParams } from "react-router-dom";
 
 
@@ -283,6 +284,13 @@ export function MovieDetail({
                 )}
               </div>
             </div>
+            {/* Graph - Desktop only */}
+            {movieReviews.length > 0 && (
+              <div className="xl:block w-[250px] h-[250px] flex-shrink-0 mr-4 self-center">
+                <div className="mb-2 text-sm text-gray-400 font-medium text-center">Analyse 3D des Notes</div>
+                <Review3DGraph reviews={movieReviews} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -324,6 +332,8 @@ export function MovieDetail({
             <p className="text-gray-400">Aucune distribution renseignée.</p>
           )}
         </section>
+
+
 
         {/* Reviews */}
         <section className="mb-12">

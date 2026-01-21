@@ -68,14 +68,6 @@ export function ReviewCard({ review }: ReviewCardProps) {
               <Heart size={16} className="text-[#ff6b6b] fill-[#ff6b6b]" />
             )}
           </div>
-
-          <button
-            onClick={handleLike}
-            className="flex items-center gap-2 text-gray-400 hover:text-[#ff6b6b] transition-colors"
-          >
-            <Heart size={16} className={isLiked ? 'fill-[#ff6b6b] text-[#ff6b6b]' : ''} />
-            <span className="text-sm">{likes} J'aime</span>
-          </button>
         </div>
       </div>
     </div>
