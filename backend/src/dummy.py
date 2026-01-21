@@ -1,7 +1,7 @@
 from models import Movie, User, Review, Friendship
 from sqlmodel import Session, create_engine, SQLModel
 
-engine = create_engine("sqlite:///database.db")
+engine = create_engine("sqlite:///data/database.db")
 SQLModel.metadata.create_all(engine)
 
 dummy_movies = [
