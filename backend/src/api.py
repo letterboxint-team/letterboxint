@@ -72,6 +72,9 @@ def list_users():
         return users
 
 
+from datetime import date
+
+
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 def signup(user: User):
     with Session(engine) as session:
@@ -83,6 +86,10 @@ def signup(user: User):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username already exists",
             )
+
+        # Set creation date
+        user.created_at = str(date.today())
+        
         session.add(user)
         session.commit()
         session.refresh(user)
